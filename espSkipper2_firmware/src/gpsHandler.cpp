@@ -6,8 +6,10 @@
 TinyGPSPlus gps;
 HardwareSerial gpsSerial(1); // Using UART1
 
-GpsHandler::GpsHandler()
+GpsHandler::GpsHandler(InstrumentDataModel& dataModel) : dataModel(dataModel)
 {
+    dataModel.addSensor(SensorId::GpsSpeed, 0.0f, SensorUnit::Knot, (char*)"GPS Speed");
+    dataModel.addSensor(SensorId::SatelliteCount, 0, SensorUnit::BlankUnit, (char*)"Satellites");
 }
 
 void GpsHandler::init()
@@ -52,7 +54,7 @@ void GpsHandler::updateGpsData()
         char c = gpsSerial.read();
         
         // This will print the raw data coming from the GPS
-        Serial.print(c); 
+        //Serial.print(c); 
         
         gps.encode(c);
     }
@@ -72,6 +74,8 @@ void GpsHandler::updateGpsData()
 
         Serial.print("Speed:      ");
         Serial.print(gps.speed.kmph());
+        dataModel.updateSensor(SensorId::GpsSpeed, (float)gps.speed.knots());
+        dataModel.updateSensor(SensorId::SatelliteCount, (int)gps.satellites.value());
         Serial.println(" km/h");
 
         Serial.println("------------------------\n");

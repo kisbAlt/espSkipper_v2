@@ -88,7 +88,7 @@ void OsptekBWR::initRegs() {
     writeCmd(0x36); 
     // 0x00 -> Normal vertical direction
     // 0x80 -> Set MY bit (Bit 7) for Vertical Flip (Upside Down fix)
-    writeData(0x80); // Start refreshing from the position far away from the fpc.
+    writeData(0x00); // Start refreshing from the position far away from the fpc.
     writeCmd(0x3A); writeData(0x11); // 24-bit Interface (Mapped to 2bpp internally)
     
     // Gamma: 0x20 (Mono) works best with Nibble logic
@@ -115,22 +115,21 @@ void OsptekBWR::clear(OspColor color) {
 // --- Graphics Core ---
 // Maps (x,y) to the buffer. Handles 2:1 vertical interlacing logical mapping.
 void OsptekBWR::drawPixel(int16_t x, int16_t y, OspColor color) {
-    //Upsidedown
+    // Fix the horizontal mirror from hardware register 0x00
+    x = (OSP_LCD_WIDTH - 1) - x;
 
+    // Original boundary check
     if (x < 0 || x >= OSP_LCD_WIDTH || y < 0 || y >= OSP_LCD_HEIGHT) return;
 
     // Convert physical Y to logical Y (Interlaced: 2 physical lines = 1 data unit)
-    // Note: Physical 400 lines -> 200 Logical Units in Buffer
     int16_t logical_y = y / 2; 
-    
-    // Buffer Address Calculation:
-    // Width is 300 pixels. 1 Byte = 2 Pixels. Line stride = 150 bytes.
+
+    // Buffer Address Calculation
     uint32_t index = (logical_y * 150) + (x / 2);
-    
+
     if (index >= OSP_BUFFER_SIZE) return;
 
     // Modify High or Low Nibble
-    // Even X -> High Nibble, Odd X -> Low Nibble
     if (x % 2 == 0) {
         _buffer[index] = (_buffer[index] & 0x0F) | (color << 4);
     } else {

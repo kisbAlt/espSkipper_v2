@@ -7,3 +7,7 @@
 #define RX_PIN 37
 #define TX_PIN 36
 #define FORCE_ON_PIN 35
+
+#define LCD_CS 5
+#define LCD_DC 9
+#define LCD_RES 4

@@ -7,8 +7,10 @@
 LIS3DH SensorOne(SPI_MODE, LIS3DH_CS);
 
 
-AccelerometerHandler::AccelerometerHandler()
+AccelerometerHandler::AccelerometerHandler(InstrumentDataModel& dataModel) : dataModel(dataModel)
 {
+    dataModel.addSensor(SensorId::TiltPitch, 0.0f, SensorUnit::Degree, (char*)"Tilt Pitch");
+    dataModel.addSensor(SensorId::TiltRoll, 0.0f, SensorUnit::Degree, (char*)"Tilt Roll");
 }
 
 void AccelerometerHandler::init()
@@ -33,6 +35,9 @@ void AccelerometerHandler::readAccelerometerData()
 
     float lastPitch = -atan2(accelx / 9.8, accelz / 9.8) / 2 / 3.141592654 * 360;
     float lastRoll = -atan2(accely / 9.8, accelz / 9.8) / 2 / 3.141592654 * 360;
+
+    dataModel.updateSensor(SensorId::TiltPitch, lastPitch);
+    dataModel.updateSensor(SensorId::TiltRoll, lastRoll);
 
     Serial.print("\nAccelerometer:\n");
 

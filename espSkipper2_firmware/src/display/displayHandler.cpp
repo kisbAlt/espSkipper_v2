@@ -1,119 +1,13 @@
 #include "displayHandler.hpp"
 #include <Arduino.h>
 #include "Osptek_BWR_42.h"
-
+#include "fonts.hpp"
 #include "Osptek_BWR_42.h"
-//#include "SparkFunLIS3DH.h"
+#include "displayUtils.hpp"
+// #include "SparkFunLIS3DH.h"
 #include "Wire.h"
 #include "SPI.h"
-
-// Standard 5x7 ASCII Bitmap Font (Characters 32 to 127)
-const uint8_t font5x7[][5] = {
-  {0x00, 0x00, 0x00, 0x00, 0x00}, // Space
-  {0x00, 0x00, 0x5F, 0x00, 0x00}, // !
-  {0x00, 0x07, 0x00, 0x07, 0x00}, // "
-  {0x14, 0x7F, 0x14, 0x7F, 0x14}, // #
-  {0x24, 0x2A, 0x7F, 0x2A, 0x12}, // $
-  {0x23, 0x13, 0x08, 0x64, 0x62}, // %
-  {0x36, 0x49, 0x55, 0x22, 0x50}, // &
-  {0x00, 0x05, 0x03, 0x00, 0x00}, // '
-  {0x00, 0x1C, 0x22, 0x41, 0x00}, // (
-  {0x00, 0x41, 0x22, 0x1C, 0x00}, // )
-  {0x14, 0x08, 0x3E, 0x08, 0x14}, // *
-  {0x08, 0x08, 0x3E, 0x08, 0x08}, // +
-  {0x00, 0x50, 0x30, 0x00, 0x00}, // ,
-  {0x08, 0x08, 0x08, 0x08, 0x08}, // -
-  {0x00, 0x60, 0x60, 0x00, 0x00}, // .
-  {0x20, 0x10, 0x08, 0x04, 0x02}, // /
-  {0x3E, 0x51, 0x49, 0x45, 0x3E}, // 0
-  {0x00, 0x42, 0x7F, 0x40, 0x00}, // 1
-  {0x42, 0x61, 0x51, 0x49, 0x46}, // 2
-  {0x21, 0x41, 0x45, 0x4B, 0x31}, // 3
-  {0x18, 0x14, 0x12, 0x7F, 0x10}, // 4
-  {0x27, 0x45, 0x45, 0x45, 0x39}, // 5
-  {0x3C, 0x4A, 0x49, 0x49, 0x30}, // 6
-  {0x01, 0x71, 0x09, 0x05, 0x03}, // 7
-  {0x36, 0x49, 0x49, 0x49, 0x36}, // 8
-  {0x06, 0x49, 0x49, 0x29, 0x1E}, // 9
-  {0x00, 0x36, 0x36, 0x00, 0x00}, // :
-  {0x00, 0x56, 0x36, 0x00, 0x00}, // ;
-  {0x08, 0x14, 0x22, 0x41, 0x00}, // <
-  {0x14, 0x14, 0x14, 0x14, 0x14}, // =
-  {0x00, 0x41, 0x22, 0x14, 0x08}, // >
-  {0x02, 0x01, 0x51, 0x09, 0x06}, // ?
-  {0x32, 0x49, 0x79, 0x41, 0x3E}, // @
-  {0x7E, 0x11, 0x11, 0x11, 0x7E}, // A
-  {0x7F, 0x49, 0x49, 0x49, 0x36}, // B
-  {0x3E, 0x41, 0x41, 0x41, 0x22}, // C
-  {0x7F, 0x41, 0x41, 0x22, 0x1C}, // D
-  {0x7F, 0x49, 0x49, 0x49, 0x41}, // E
-  {0x7F, 0x09, 0x09, 0x09, 0x01}, // F
-  {0x3E, 0x41, 0x49, 0x49, 0x7A}, // G
-  {0x7F, 0x08, 0x08, 0x08, 0x7F}, // H
-  {0x00, 0x41, 0x7F, 0x41, 0x00}, // I
-  {0x20, 0x40, 0x41, 0x3F, 0x01}, // J
-  {0x7F, 0x08, 0x14, 0x22, 0x41}, // K
-  {0x7F, 0x40, 0x40, 0x40, 0x40}, // L
-  {0x7F, 0x02, 0x0C, 0x02, 0x7F}, // M
-  {0x7F, 0x04, 0x08, 0x10, 0x7F}, // N
-  {0x3E, 0x41, 0x41, 0x41, 0x3E}, // O
-  {0x7F, 0x09, 0x09, 0x09, 0x06}, // P
-  {0x3E, 0x41, 0x51, 0x21, 0x5E}, // Q
-  {0x7F, 0x09, 0x19, 0x29, 0x46}, // R
-  {0x46, 0x49, 0x49, 0x49, 0x31}, // S
-  {0x01, 0x01, 0x7F, 0x01, 0x01}, // T
-  {0x3F, 0x40, 0x40, 0x40, 0x3F}, // U
-  {0x1F, 0x20, 0x40, 0x20, 0x1F}, // V
-  {0x3F, 0x40, 0x38, 0x40, 0x3F}, // W
-  {0x63, 0x14, 0x08, 0x14, 0x63}, // X
-  {0x07, 0x08, 0x70, 0x08, 0x07}, // Y
-  {0x61, 0x51, 0x49, 0x45, 0x43}, // Z
-  {0x00, 0x7F, 0x41, 0x41, 0x00}, // [
-  {0x02, 0x04, 0x08, 0x10, 0x20}, // \ (backslash)
-  {0x00, 0x41, 0x41, 0x7F, 0x00}, // ]
-  {0x04, 0x02, 0x01, 0x02, 0x04}, // ^
-  {0x40, 0x40, 0x40, 0x40, 0x40}, // _
-  {0x00, 0x01, 0x02, 0x04, 0x00}, // `
-  {0x20, 0x54, 0x54, 0x54, 0x78}, // a
-  {0x7F, 0x48, 0x44, 0x44, 0x38}, // b
-  {0x38, 0x44, 0x44, 0x44, 0x20}, // c
-  {0x38, 0x44, 0x44, 0x48, 0x7F}, // d
-  {0x38, 0x54, 0x54, 0x54, 0x18}, // e
-  {0x08, 0x7E, 0x09, 0x01, 0x02}, // f
-  {0x0C, 0x52, 0x52, 0x52, 0x3E}, // g
-  {0x7F, 0x08, 0x04, 0x04, 0x78}, // h
-  {0x00, 0x44, 0x7D, 0x40, 0x00}, // i
-  {0x20, 0x40, 0x44, 0x3D, 0x00}, // j
-  {0x7F, 0x10, 0x28, 0x44, 0x00}, // k
-  {0x00, 0x41, 0x7F, 0x40, 0x00}, // l
-  {0x7C, 0x04, 0x18, 0x04, 0x78}, // m
-  {0x7C, 0x08, 0x04, 0x04, 0x78}, // n
-  {0x38, 0x44, 0x44, 0x44, 0x38}, // o
-  {0x7C, 0x14, 0x14, 0x14, 0x08}, // p
-  {0x08, 0x14, 0x14, 0x18, 0x7C}, // q
-  {0x7C, 0x08, 0x04, 0x04, 0x08}, // r
-  {0x48, 0x54, 0x54, 0x54, 0x20}, // s
-  {0x04, 0x3F, 0x44, 0x40, 0x20}, // t
-  {0x3C, 0x40, 0x40, 0x20, 0x7C}, // u
-  {0x1C, 0x20, 0x40, 0x20, 0x1C}, // v
-  {0x3C, 0x40, 0x30, 0x40, 0x3C}, // w
-  {0x44, 0x28, 0x10, 0x28, 0x44}, // x
-  {0x0C, 0x50, 0x50, 0x50, 0x3C}, // y
-  {0x44, 0x64, 0x54, 0x4C, 0x44}, // z
-  {0x00, 0x08, 0x36, 0x41, 0x00}, // {
-  {0x00, 0x00, 0x7F, 0x00, 0x00}, // |
-  {0x00, 0x41, 0x36, 0x08, 0x00}, // }
-  {0x10, 0x08, 0x18, 0x10, 0x08}  // ~
-};
-
-// --- Text Drawing Engine ---
-// Draws a single character
-/*
- * Demo: Flicker-Free Bouncing Animation (Fixed variable names)
- * Hardware: ESP32-S3 + Osptek 4.2" BWR (ST7306)
- */
-
-OsptekBWR lcd(5, 9, 4, -1, -1);
+#include "fonts.hpp"
 
 // Shape 1 (Red Box) Variables
 int boxSize = 40;
@@ -124,93 +18,90 @@ int boxDx = 5, boxDy = 6;
 int radius = 25;
 int circleX = 200, circleY = 300;
 int circleDx = -7, circleDy = -5;
-void drawChar(int16_t x, int16_t y, char c, OspColor color, OspColor bg, uint8_t size = 1) {
-    if (c < 32 || c > 126) return; // Drop characters outside standard ASCII
 
-    for (int8_t i = 0; i < 5; i++) {
-        uint8_t line = font5x7[c - 32][i];
-        for (int8_t j = 0; j < 8; j++, line >>= 1) {
-            if (line & 1) {
-                if (size == 1) lcd.drawPixel(x + i, y + j, color);
-                else lcd.fillRect(x + i * size, y + j * size, size, size, color);
-            } else if (bg != color) { // Render background if it's different from the text color
-                if (size == 1) lcd.drawPixel(x + i, y + j, bg);
-                else lcd.fillRect(x + i * size, y + j * size, size, size, bg);
-            }
-        }
-    }
-}
-
-// Draws a full string of text
-void drawString(int16_t x, int16_t y, const char *text, OspColor color, OspColor bg, uint8_t size = 1) {
-    int16_t cursor_x = x;
-    while (*text) {
-        drawChar(cursor_x, y, *text, color, bg, size);
-        cursor_x += (6 * size); // Move cursor right: 5 pixels wide + 1 pixel gap * size
-        text++;
-    }
-}
 int updateCounter = 0;
 unsigned long lastUpdate = 0;
 
+void DisplayHandler::convertValueToString(char* valueStr, SensorValue value)
+{
+    std::visit([&valueStr](const auto& arg) {
+        using T = std::decay_t<decltype(arg)>;
 
-DisplayHandler::DisplayHandler()
+        if constexpr (std::is_same_v<T, float>) {
+            dtostrf(arg, 1, 1, valueStr);
+        } 
+        else if constexpr (std::is_same_v<T, int>) {
+            snprintf(valueStr, sizeof(valueStr), "%d", arg);
+        } 
+        else if constexpr (std::is_same_v<T, const char*>) {
+            snprintf(valueStr, sizeof(valueStr), "%s", arg);
+        }
+    }, value);
+}
+
+DisplayHandler::DisplayHandler(InstrumentDataModel &dataModel) : dataModel(dataModel), lcd(LCD_CS, LCD_DC, LCD_RES, -1, -1), currentLayout(DisplayLayout::ThreeColTwoRow)
 {
 }
 
 void DisplayHandler::init()
 {
-    // 1. Manually pull both CS pins HIGH immediately so neither hogs the bus
-    // pinMode(LIS3DH_CS, OUTPUT);
-    // digitalWrite(LIS3DH_CS, HIGH);
-    // pinMode(5, OUTPUT); // Display CS (Pin 5)
-    // digitalWrite(5, HIGH);
-
-    // 2. Initialize the shared SPI bus ONCE (Do not pass a CS pin here)
-    
-
-
-    // 4. Initialize Display
-    lcd.begin(false); 
+    lcd.begin(false);
     lcd.clear(COLOR_NEUTRAL);
     lcd.update();
 }
 
-void DisplayHandler::updateDisplay()
+void DisplayHandler::updateDisplay(const DisplayDataEntity datapoints[10], const int dataCount)
 {
     lastUpdate = millis();
-
-    // 1. CLEAR: Wipe the RAM buffer entirely
     lcd.clear(COLOR_NEUTRAL);
-
-    // 2. DRAW STATIC/DYNAMIC TEXT
-    drawString(10, 20, "SYSTEM DASHBOARD", COLOR_BLACK, COLOR_NEUTRAL, 3);
-    drawString(10, 60, "Sensor: Active", COLOR_RED, COLOR_NEUTRAL, 2);
-    lcd.fillRect(10, 95, 280, 4, COLOR_RED);
-
-    // 3. ANIMATION PHYSICS (Constrained to lower half: Y = 200 to 400)
-    boxX += boxDx;
-    boxY += boxDy;
-    // Bounce X
-    if (boxX <= 0 || boxX + boxSize >= OSP_LCD_WIDTH) boxDx = -boxDx;
-    // Bounce Y (Upper bound 200, Lower bound OSP_LCD_HEIGHT)
-    if (boxY <= 200 || boxY + boxSize >= OSP_LCD_HEIGHT) boxDy = -boxDy;
-
-    circleX += circleDx;
-    circleY += circleDy;
-    // Bounce X
-    if (circleX - radius <= 0 || circleX + radius >= OSP_LCD_WIDTH) circleDx = -circleDx;
-    // Bounce Y
-    if (circleY - radius <= 200 || circleY + radius >= OSP_LCD_HEIGHT) circleDy = -circleDy;
-
-    // 4. DRAW ANIMATION
-    lcd.fillRect(boxX, boxY, boxSize, boxSize, COLOR_RED);
-    lcd.drawCircle(circleX, circleY, radius, COLOR_BLACK);
-
-    // 5. PUSH: Send the completed frame to the display
+    DrawLayout();
     lcd.update();
-
-    // Increment the counter for the next loop
     updateCounter++;
-    
+}
+
+void DisplayHandler::DrawLayout()
+{
+    switch (currentLayout)
+    {
+    case DisplayLayout::ThreeColTwoRow:
+    {
+        lcd.drawRect(0, 200, 300, 1, COLOR_BLACK);
+        lcd.drawRect(0, 266, 300, 1, COLOR_BLACK);
+        lcd.drawRect(0, 332, 300, 1, COLOR_BLACK);
+        lcd.drawRect(0, 398, 300, 1, COLOR_BLACK);
+
+        // 2. Draw Vertical Lines (Width = 2, Height = 200)
+        lcd.drawRect(0, 200, 1, 200, COLOR_BLACK);   // Left border
+        lcd.drawRect(149, 200, 1, 200, COLOR_BLACK); // Middle border (0 + 2 + 147)
+        lcd.drawRect(298, 200, 1, 200, COLOR_BLACK); // Right border (149 + 2 + 147)
+
+        // Call the method and provide the display logic as the callback
+        dataModel.drawActiveSensors([&](int index, const char *title, SensorValue value, SensorUnit unit)
+                                    {
+                                        // Calculate the row (0 to 2) and column (0 to 1) based on the index
+                                        int row = index / 2;
+                                        int col = index % 2;
+
+                                        // Calculate the top-left X and Y coordinates for the current cell
+                                        int cellX = (col * 149) + 5;
+                                        int cellY = 200 + (row * 66) + 5;
+
+                                        DisplayUtils::DrawText(lcd, cellX, cellY, title, COLOR_BLACK, COLOR_NEUTRAL, 2);
+
+                                        char valueStr[32];
+                                        convertValueToString(valueStr, value);
+
+                                        DisplayUtils::DrawText(lcd, cellX, cellY + 25, valueStr, COLOR_BLACK, COLOR_NEUTRAL, 4);
+
+                                        const char *unitText = "test";
+                                        int valueLen = strlen(unitText);
+                                        int unitX = cellX + 149 - (valueLen * 12);
+
+                                        // 5. Draw the Unit Text (Size 1 or 2)
+                                        DisplayUtils::DrawText(lcd, unitX, cellY, unitText, COLOR_RED, COLOR_NEUTRAL, 2); }); // End of callback
+        break;
+    default:
+        break;
+    }
+    }
 }
