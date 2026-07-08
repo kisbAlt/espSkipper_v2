@@ -9,8 +9,9 @@ LIS3DH SensorOne(SPI_MODE, LIS3DH_CS);
 
 AccelerometerHandler::AccelerometerHandler(InstrumentDataModel& dataModel) : dataModel(dataModel)
 {
-    dataModel.addSensor(SensorId::TiltPitch, 0.0f, SensorUnit::Degree, (char*)"Tilt Pitch");
-    dataModel.addSensor(SensorId::TiltRoll, 0.0f, SensorUnit::Degree, (char*)"Tilt Roll");
+    SensorUnit degreeUnit = SensorUnit(SensorUnitEnum::Degrees);
+    dataModel.addSensor(SensorId::TiltPitch, 0.0f, degreeUnit, (char*)"Tilt Pitch");
+    dataModel.addSensor(SensorId::TiltRoll, 0.0f, degreeUnit, (char*)"Tilt Roll");
 }
 
 void AccelerometerHandler::init()
@@ -29,12 +30,18 @@ void AccelerometerHandler::init()
 
 void AccelerometerHandler::readAccelerometerData()
 {
-    float accelx = SensorOne.readFloatAccelX();
-    float accely = SensorOne.readFloatAccelY();
-    float accelz = SensorOne.readFloatAccelZ();
+    float raw_x = SensorOne.readFloatAccelX();
+    float raw_y = SensorOne.readFloatAccelY();
+    float raw_z = SensorOne.readFloatAccelZ();
 
-    float lastPitch = -atan2(accelx / 9.8, accelz / 9.8) / 2 / 3.141592654 * 360;
-    float lastRoll = -atan2(accely / 9.8, accelz / 9.8) / 2 / 3.141592654 * 360;
+    // Swapping Y and Z because gravity is acting on the physical Y-axis
+    float virt_x = raw_x;  
+    float virt_y = -raw_z; // The negative sign keeps the rotation direction standard
+    float virt_z = raw_y;  // Change to -raw_y if your angles are perfectly upside down
+
+    // Now do the math using the virtual axes
+    float lastRoll = atan2(-virt_x, sqrt((virt_y * virt_y) + (virt_z * virt_z))) * (180.0 / PI);
+    float lastPitch  = atan2(virt_y, virt_z) * (180.0 / PI);
 
     dataModel.updateSensor(SensorId::TiltPitch, lastPitch);
     dataModel.updateSensor(SensorId::TiltRoll, lastRoll);

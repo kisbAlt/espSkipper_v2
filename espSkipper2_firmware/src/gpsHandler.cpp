@@ -8,17 +8,12 @@ HardwareSerial gpsSerial(1); // Using UART1
 
 GpsHandler::GpsHandler(InstrumentDataModel& dataModel) : dataModel(dataModel)
 {
-    dataModel.addSensor(SensorId::GpsSpeed, 0.0f, SensorUnit::Knot, (char*)"GPS Speed");
-    dataModel.addSensor(SensorId::SatelliteCount, 0, SensorUnit::BlankUnit, (char*)"Satellites");
+    dataModel.addSensor(SensorId::GpsSpeed, 0.0f, SensorUnit(SensorUnitEnum::Kmph), (char*)"GPS Speed");
+    dataModel.addSensor(SensorId::SatelliteCount, 0, SensorUnit(SensorUnitEnum::BlankUnit), (char*)"Satellites");
 }
 
 void GpsHandler::init()
 {
-    // Start PC Serial Monitor
-    Serial.begin(115200);
-    while (!Serial) { ; } // Wait for serial port to connect
-    Serial.println("Starting GPS Test...");
-
     // Force GPS module on if required by your hardware
     pinMode(FORCE_ON_PIN, OUTPUT);
     digitalWrite(FORCE_ON_PIN, HIGH); 
@@ -74,7 +69,7 @@ void GpsHandler::updateGpsData()
 
         Serial.print("Speed:      ");
         Serial.print(gps.speed.kmph());
-        dataModel.updateSensor(SensorId::GpsSpeed, (float)gps.speed.knots());
+        dataModel.updateSensor(SensorId::GpsSpeed, (float)gps.speed.kmph());
         dataModel.updateSensor(SensorId::SatelliteCount, (int)gps.satellites.value());
         Serial.println(" km/h");
 

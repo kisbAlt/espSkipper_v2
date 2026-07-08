@@ -6,6 +6,8 @@
 #include "SPI.h"
 #include "display/displayUtils.hpp"
 #include "instrumentDataModel.hpp"
+#include "stringTranslator.hpp"
+
 
 InstrumentDataModel instrumentDataModel;
 DisplayHandler displayHandler(instrumentDataModel);
@@ -15,6 +17,8 @@ GpsHandler gpsHandler(instrumentDataModel);
 void setup() {
   Serial.begin(115200);
   delay(1000); // Give serial a moment to wake up
+
+  Translator::setLanguage(0);
 
   Serial.println("Init PINs and SPI");
   pinMode(LIS3DH_CS, OUTPUT);
@@ -34,15 +38,8 @@ void setup() {
   Serial.println("Setup complete.");
 }
 
-int dataCount = 3;
-DisplayDataEntity datapoints[10] = {
-    {"Speed", "Knots", 0.95, 0},
-    {"Accel Y", "m/s^2", 5.0, 1},
-    {"Accel Z", "m/s^2", 3.0, 2},
-};
-
 void loop() {
-  displayHandler.updateDisplay(datapoints, dataCount);
+  displayHandler.updateDisplay();
   accelerometerHandler.readAccelerometerData();
   gpsHandler.updateGpsData();
   delay(500);
