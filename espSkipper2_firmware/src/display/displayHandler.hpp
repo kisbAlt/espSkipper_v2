@@ -6,20 +6,33 @@
 
 #define DISPLAY_WIDTH 300
 
-class DisplayHandler {
-    private:
+class DisplayHandler
+{
+private:
     enum class DisplayLayout
     {
         ThreeColTwoRow
     };
+    enum class StringConvertType
+    {
+        Number,
+        TwoDigitNumber,
+        ThreeDigitNumber,
+    };
+    int pageIndex = 0;
     OsptekBWR lcd;
     DisplayLayout currentLayout;
-    InstrumentDataModel& dataModel;
+    InstrumentDataModel &dataModel;
     SensorId focusedSensor = SensorId::GpsSpeed;
-    void convertValueToString(char* valueStr, SensorValue value);
+    void convertValueToString(char *valueStr, SensorValue value);
+    int currentSensorDrawn() const;
+
 public:
-    DisplayHandler(InstrumentDataModel& dataModel);
+    DisplayHandler(InstrumentDataModel &dataModel);
     void init();
     void updateDisplay();
     void DrawLayout();
+    void stepFocusedSensor();
+    void nextDisplayPage();
+    void ResetDisplay();
 };

@@ -4,14 +4,81 @@
 void InstrumentDataModel::updateSensor(SensorId id, SensorValue val)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_data[static_cast<size_t>(id)].value = val;
-    m_data[static_cast<size_t>(id)].hasData = true;
+    m_data[static_cast<size_t>(id)].UpdateValue(val);
 }
-void InstrumentDataModel::addSensor(SensorId id, SensorValue val, SensorUnit unit, char *title)
+
+void InstrumentDataModel::updateSensorIfLarger(SensorId id, SensorValue val)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_data[static_cast<size_t>(id)] = {id, val, title, unit, true};
+    std::visit([&val, this, id](auto& currentVal) {
+        using T = std::decay_t<decltype(currentVal)>;
+        
+        if constexpr (std::is_arithmetic_v<T>) {
+            const T newVal = std::get<T>(val);
+            if(!m_data[static_cast<size_t>(id)].hasData ||static_cast<T>(currentVal < newVal)) {
+                m_data[static_cast<size_t>(id)].UpdateValue(newVal);
+            }
+        }
+    }, m_data[static_cast<size_t>(id)].value);
+}
+
+void InstrumentDataModel::updateSensorIfSmaller(SensorId id, SensorValue val)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::visit([&val, this, id](auto& currentVal) {
+        using T = std::decay_t<decltype(currentVal)>;
+        
+        if constexpr (std::is_arithmetic_v<T>) {
+            const T newVal = std::get<T>(val);
+            if(!m_data[static_cast<size_t>(id)].hasData || static_cast<T>(currentVal > newVal)) {
+                m_data[static_cast<size_t>(id)].UpdateValue(newVal);
+            }
+        }
+    }, m_data[static_cast<size_t>(id)].value);
+}
+
+void InstrumentDataModel::addSensor(SensorId id, SensorValue val, SensorUnit unit, char *title, bool isAverage)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_data[static_cast<size_t>(id)] = {id, val, title, unit, isAverage};
     count++;
+}
+
+bool InstrumentDataModel::isSensorEnabled(SensorId id) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_data[static_cast<size_t>(id)].enabled;
+}
+
+void InstrumentDataModel::disableSensor(SensorId id)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_data[static_cast<size_t>(id)].enabled = false;
+}
+
+void InstrumentDataModel::enableSensor(SensorId id)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_data[static_cast<size_t>(id)].enabled = true;
+}
+
+bool InstrumentDataModel::sensorHaveData(SensorId id) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_data[static_cast<size_t>(id)].hasData;
+}
+
+SensorValue InstrumentDataModel::getSensorValue(SensorId id) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+   return m_data[static_cast<size_t>(id)].value;
+}
+
+bool InstrumentDataModel::isSensorEnabledAndHaveData(SensorId id) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    const auto& record = m_data[static_cast<size_t>(id)];
+    return record.enabled && record.hasData;
 }
 
 std::vector<std::pair<SensorId, SensorValue>> InstrumentDataModel::getDisplaySnapshot() const
@@ -27,6 +94,20 @@ std::vector<std::pair<SensorId, SensorValue>> InstrumentDataModel::getDisplaySna
         }
     }
     return snapshot;
+}
+
+int InstrumentDataModel::getActiveSensorCount() const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    int count = 0;
+    for (size_t i = 0; i < m_data.size(); ++i)
+    {
+        if (isSensorEnabledAndHaveData(static_cast<SensorId>(i)))
+        {
+            count++;
+        }
+    }
+    return count;
 }
 
 SensorUnit::SensorUnit() : sensorUnit(SensorUnitEnum::BlankUnit)
@@ -61,3 +142,23 @@ const char *SensorUnit::GetString()
         return nullptr;
     }
 };
+
+void InstrumentDataModel::SensorRecord::UpdateValue(SensorValue newValue)
+{
+    if (!isAverage || !hasData || value.index() != newValue.index()) {
+        value = newValue;
+        dataCount = isAverage ? 1 : 0;
+        hasData = true;
+        return;
+    }
+    dataCount++;
+    std::visit([&newValue, this](auto& currentVal) {
+        using T = std::decay_t<decltype(currentVal)>;
+        
+        if constexpr (std::is_arithmetic_v<T>) {
+            const T newVal = std::get<T>(newValue);
+            
+            currentVal = static_cast<T>(currentVal + (newVal - currentVal) / static_cast<float>(dataCount));
+        }
+    }, value);
+}

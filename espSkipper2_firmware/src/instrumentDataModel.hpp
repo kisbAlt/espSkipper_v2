@@ -11,13 +11,28 @@
 enum class SensorId : size_t
 {
     GpsSpeed = 0,
+    MaxGpsSpeed,
+    MinGpsSpeed,
+    AvgGpsSpeed,
     SatelliteCount,
     WaterDepth,
     WindSpeed,
     WindDirection,
     Temperature,
     TiltPitch,
+    TiltPitchMin,
+    TiltPitchMax,
+    TiltPitchAvg,
     TiltRoll,
+    TiltRollMin,
+    TiltRollMax,
+    TiltRollAvg,
+    DateTimeHour,
+    DateTimeMinute,
+    DateTimeSecond,
+    DateTimeDay,
+    DateTimeMonth,
+    DateTimeYear,
     MAX_SENSORS
 };
 
@@ -53,7 +68,14 @@ private:
         SensorValue value;
         char *title;
         SensorUnit unit;
+        bool isAverage = false;
         bool hasData = false;
+        bool enabled = true;
+        
+
+        int dataCount = 0;
+
+        void UpdateValue(SensorValue newValue);
     };
 
     std::array<SensorRecord, static_cast<size_t>(SensorId::MAX_SENSORS)> m_data;
@@ -64,8 +86,17 @@ public:
     
     int count = 0;
     void updateSensor(SensorId id, SensorValue val);
-    void addSensor(SensorId id, SensorValue val, SensorUnit unit, char *title);
+    void updateSensorIfLarger(SensorId id, SensorValue val);
+    void updateSensorIfSmaller(SensorId id, SensorValue val);
+    void addSensor(SensorId id, SensorValue val, SensorUnit unit, char *title, bool isAverage = false);
+    bool isSensorEnabled(SensorId id) const;
+    void disableSensor(SensorId id);
+    void enableSensor(SensorId id);
+    bool sensorHaveData(SensorId id) const;
+    SensorValue getSensorValue(SensorId id) const;
+    bool isSensorEnabledAndHaveData(SensorId id) const;
     std::vector<std::pair<SensorId, SensorValue>> getDisplaySnapshot() const;
+    int getActiveSensorCount() const;
 
     template <typename Callback>
     void drawActiveSensors(Callback cb) const
@@ -76,11 +107,9 @@ public:
 
         for (size_t i = 0; i < m_data.size(); ++i)
         {
-            if (m_data[i].hasData)
+            if (m_data[i].hasData && m_data[i].enabled)
             {
-                Serial.print("drawActiveSensors hasdata");
                 std::visit([](const auto& arg) {
-                    Serial.println(arg);
                 }, m_data[i].value);
                 cb(displayIndex, m_data[i].title, m_data[i].value, m_data[i].unit, m_data[i].id);
                 displayIndex++;

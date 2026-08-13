@@ -11,7 +11,16 @@ AccelerometerHandler::AccelerometerHandler(InstrumentDataModel& dataModel) : dat
 {
     SensorUnit degreeUnit = SensorUnit(SensorUnitEnum::Degrees);
     dataModel.addSensor(SensorId::TiltPitch, 0.0f, degreeUnit, (char*)"Tilt Pitch");
+    dataModel.addSensor(SensorId::TiltPitchMin, 0.0f, degreeUnit, (char*)"Pitch Min");
+    dataModel.addSensor(SensorId::TiltPitchMax, 0.0f, degreeUnit, (char*)"Pitch Max");
+    dataModel.addSensor(SensorId::TiltPitchAvg, 0.0f, degreeUnit, (char*)"Pitch Avg", true);
     dataModel.addSensor(SensorId::TiltRoll, 0.0f, degreeUnit, (char*)"Tilt Roll");
+    dataModel.addSensor(SensorId::TiltRollMin, 0.0f, degreeUnit, (char*)"Roll Min");
+    dataModel.addSensor(SensorId::TiltRollMax, 0.0f, degreeUnit, (char*)"Roll Max");
+    dataModel.addSensor(SensorId::TiltRollAvg, 0.0f, degreeUnit, (char*)"Roll Avg", true);
+    dataModel.disableSensor(SensorId::TiltPitchMin);
+    dataModel.disableSensor(SensorId::TiltPitchMax);
+    dataModel.disableSensor(SensorId::TiltPitchAvg);
 }
 
 void AccelerometerHandler::init()
@@ -44,12 +53,18 @@ void AccelerometerHandler::readAccelerometerData()
     float lastPitch  = atan2(virt_y, virt_z) * (180.0 / PI);
 
     dataModel.updateSensor(SensorId::TiltPitch, lastPitch);
+    dataModel.updateSensor(SensorId::TiltPitchAvg, lastPitch);
+    dataModel.updateSensorIfSmaller(SensorId::TiltPitchMin, lastPitch);
+    dataModel.updateSensorIfLarger(SensorId::TiltPitchMax, lastPitch);
     dataModel.updateSensor(SensorId::TiltRoll, lastRoll);
+    dataModel.updateSensor(SensorId::TiltRollAvg, lastRoll);
+    dataModel.updateSensorIfSmaller(SensorId::TiltRollMin, lastRoll);
+    dataModel.updateSensorIfLarger(SensorId::TiltRollMax, lastRoll);
 
-    Serial.print("\nAccelerometer:\n");
+    // Serial.print("\nAccelerometer:\n");
 
-    Serial.print(" lastPitch = ");
-    Serial.println(lastPitch);
-    Serial.print(" lastRoll = ");
-    Serial.println(lastRoll);
+    // Serial.print(" lastPitch = ");
+    // Serial.println(lastPitch);
+    // Serial.print(" lastRoll = ");
+    // Serial.println(lastRoll);
 }
