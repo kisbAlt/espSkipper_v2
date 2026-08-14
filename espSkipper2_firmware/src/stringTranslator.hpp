@@ -15,7 +15,10 @@
     X(CelsiusShort,   "°C",         "°C") \
     X(DegreesLong,    "degrees",    "fok") \
     X(DegreesShort,   "deg",         "fok") \
-    X(BlankUnit,      "",           "") 
+    X(BlankUnit,      "",           "")  \
+    X(SettingBtnBrightness, "Button Brightness", "Gomb Fényerő") \
+    X(SettingDisplayDateTime, "Display Date and Time", "Dátum és Idő Megjelenítése") \
+    X(SettingDisplayTimeOnly, "Display Time Only", "Csak Idő Megjelenítése")
 
 // 2. Generate the Enum
 #define GENERATE_ENUM(KEY, EN, HU) KEY,

@@ -20,7 +20,7 @@ void LedHandler::on()
 {
     _isBlinking = false;
     _isOn = true;
-    ledcWrite(_pwmChannel, _settings.getButtonBrightnessLevel()); // Changed _pin to _pwmChannel
+    ledcWrite(_pwmChannel, _settings.getValue<uint8_t>(SettingsKey::BtnBrightness)); // Changed _pin to _pwmChannel
 }
 
 void LedHandler::off()
@@ -34,7 +34,7 @@ void LedHandler::toggle()
 {
     _isBlinking = false;
     _isOn = !_isOn;
-    ledcWrite(_pwmChannel, _isOn ? _settings.getButtonBrightnessLevel() : 0); // Changed _pin to _pwmChannel
+    ledcWrite(_pwmChannel, _isOn ? _settings.getValue<uint8_t>(SettingsKey::BtnBrightness) : 0); // Changed _pin to _pwmChannel
 }
 
 void LedHandler::update()
@@ -47,7 +47,7 @@ void LedHandler::update()
             _lastBlinkTime = currentMillis;
 
             _isOn = !_isOn;
-            ledcWrite(_pwmChannel, _isOn ? _settings.getButtonBrightnessLevel() : 0); // Changed _pin to _pwmChannel
+            ledcWrite(_pwmChannel, _isOn ? _settings.getValue<uint8_t>(SettingsKey::BtnBrightness) : 0); // Changed _pin to _pwmChannel
         }
     }
 }

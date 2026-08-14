@@ -8,6 +8,7 @@
 #include "Wire.h"
 #include "SPI.h"
 #include "fonts.hpp"
+#include "settingsHandler.hpp"
 
 // Shape 1 (Red Box) Variables
 int boxSize = 40;
@@ -64,7 +65,8 @@ int DisplayHandler::currentSensorDrawn() const
 
 }
 
-DisplayHandler::DisplayHandler(InstrumentDataModel &dataModel) : dataModel(dataModel), lcd(LCD_CS, LCD_DC, LCD_RES, -1, -1), currentLayout(DisplayLayout::ThreeColTwoRow)
+DisplayHandler::DisplayHandler(InstrumentDataModel &dataModel, const Settings& settings) : dataModel(dataModel), settings(settings),
+                                                                                        lcd(LCD_CS, LCD_DC, LCD_RES, -1, -1), currentLayout(DisplayLayout::ThreeColTwoRow)
 {
 }
 
@@ -162,7 +164,31 @@ void DisplayHandler::DrawLayout()
 
 void DisplayHandler::DrawSettingsPage()
 {
-    DisplayUtils::DrawTextCentered(lcd, 180, "Settings", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+    DisplayUtils::DrawTextCentered(lcd, 15, "Settings", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+    for (size_t i = 0; i < settings.getSettingsCount(); i++)
+    {
+        const SettingDef &setting = settings.getSettingDef(i);
+        const char *settingName = setting.GetString();
+        char valueStr[32];
+
+        std::visit([&valueStr](const auto &arg)
+                   {
+            using T = std::decay_t<decltype(arg)>;
+
+            if constexpr (std::is_same_v<T, float>) {
+                dtostrf(arg, 1, 1, valueStr);
+            } 
+            else if constexpr (std::is_same_v<T, int> || std::is_same_v<T, uint8_t>) {
+                snprintf(valueStr, sizeof(valueStr), "%d", arg);
+            } 
+            else if constexpr (std::is_same_v<T, bool>) {
+                snprintf(valueStr, sizeof(valueStr), "%s", arg ? "On" : "Off");
+            } }, setting.defaultValue);
+
+        DisplayUtils::DrawText(lcd, 10, 40 + i * 30, settingName, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
+        DisplayUtils::DrawText(lcd, 255, 40 + i * 30, valueStr, COLOR_RED, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+    }
+    
 }
 
 void DisplayHandler::ResetDisplay()

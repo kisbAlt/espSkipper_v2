@@ -15,7 +15,7 @@
 Settings settings;
 
 InstrumentDataModel instrumentDataModel(settings);
-DisplayHandler displayHandler(instrumentDataModel);
+DisplayHandler displayHandler(instrumentDataModel, settings);
 AccelerometerHandler accelerometerHandler(instrumentDataModel);
 GpsHandler gpsHandler(instrumentDataModel);
 SettingsDisplay settingsDisplay(settings, displayHandler);
@@ -48,7 +48,7 @@ AppState currentState = AppState::MAIN_SCREEN;
 // 1. Define the task that will run on Core 0
 void sensorDisplayTask(void *pvParameters)
 {
-    displayHandler.ResetDisplay();
+    //displayHandler.ResetDisplay();
     for (;;)
     {
         if (currentState == AppState::SETTINGS_SCREEN)
