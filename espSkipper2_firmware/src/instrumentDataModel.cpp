@@ -1,6 +1,10 @@
 #include "instrumentDataModel.hpp"
 #include "stringTranslator.hpp"
 
+InstrumentDataModel::InstrumentDataModel(const Settings &settings) : m_settings(settings)
+{
+}
+
 void InstrumentDataModel::updateSensor(SensorId id, SensorValue val)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -46,20 +50,7 @@ void InstrumentDataModel::addSensor(SensorId id, SensorValue val, SensorUnit uni
 
 bool InstrumentDataModel::isSensorEnabled(SensorId id) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_data[static_cast<size_t>(id)].enabled;
-}
-
-void InstrumentDataModel::disableSensor(SensorId id)
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_data[static_cast<size_t>(id)].enabled = false;
-}
-
-void InstrumentDataModel::enableSensor(SensorId id)
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_data[static_cast<size_t>(id)].enabled = true;
+    return !m_settings.isSensorDisabled(id);
 }
 
 bool InstrumentDataModel::sensorHaveData(SensorId id) const
@@ -76,9 +67,7 @@ SensorValue InstrumentDataModel::getSensorValue(SensorId id) const
 
 bool InstrumentDataModel::isSensorEnabledAndHaveData(SensorId id) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    const auto& record = m_data[static_cast<size_t>(id)];
-    return record.enabled && record.hasData;
+    return isSensorEnabled(id) && sensorHaveData(id);
 }
 
 std::vector<std::pair<SensorId, SensorValue>> InstrumentDataModel::getDisplaySnapshot() const

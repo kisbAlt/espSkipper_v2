@@ -1,30 +1,45 @@
 #include "ledHandler.hpp"
+#include "Arduino.h"
 
-LedHandler::LedHandler(uint8_t pin)
-    : _pin(pin), _isOn(false), _isBlinking(false), 
-      _blinkInterval(0), _lastBlinkTime(0) {}
+LedHandler::LedHandler(uint8_t pin, const Settings& settings)
+    : _pin(pin), _settings(settings), _isOn(false), _isBlinking(false), 
+      _blinkInterval(0), _lastBlinkTime(0) {
+        _brightness = settings.getButtonBrightnessLevel();
+      }
 
 void LedHandler::begin() {
-    pinMode(_pin, OUTPUT);
-    off(); // Ensure it starts turned off
+    // Legacy Core v2.x API (only use if v3.x fails to compile)
+    const int pwmChannel = 0; // You'd need to manage channels per pin
+    ledcSetup(pwmChannel, 5000, 8);
+    ledcAttachPin(_pin, pwmChannel);
+    off();
+}
+
+void LedHandler::setBrightness(uint8_t brightness) {
+    _brightness = brightness;
+    
+    // If the LED is currently ON and not blinking, apply immediately
+    if (_isOn && !_isBlinking) {
+        ledcWrite(_pin, _brightness);
+    }
 }
 
 void LedHandler::on() {
     _isBlinking = false;
     _isOn = true;
-    digitalWrite(_pin, HIGH); // HIGH turns ON the S8050 NPN transistor
+    ledcWrite(_pin, _brightness); // Apply current brightness level
 }
 
 void LedHandler::off() {
     _isBlinking = false;
     _isOn = false;
-    digitalWrite(_pin, LOW);  // LOW turns OFF the S8050 NPN transistor
+    ledcWrite(_pin, 0); // 0 duty cycle = OFF
 }
 
 void LedHandler::toggle() {
     _isBlinking = false;
     _isOn = !_isOn;
-    digitalWrite(_pin, _isOn ? HIGH : LOW);
+    ledcWrite(_pin, _isOn ? _brightness : 0);
 }
 
 void LedHandler::blink(uint32_t intervalMillis) {
@@ -40,7 +55,7 @@ void LedHandler::update() {
             
             // Toggle the current state
             _isOn = !_isOn;
-            digitalWrite(_pin, _isOn ? HIGH : LOW);
+            ledcWrite(_pin, _isOn ? _brightness : 0);
         }
     }
 }

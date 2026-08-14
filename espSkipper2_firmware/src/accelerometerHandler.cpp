@@ -18,9 +18,6 @@ AccelerometerHandler::AccelerometerHandler(InstrumentDataModel& dataModel) : dat
     dataModel.addSensor(SensorId::TiltRollMin, 0, degreeUnit, (char*)"Roll Min");
     dataModel.addSensor(SensorId::TiltRollMax, 0, degreeUnit, (char*)"Roll Max");
     dataModel.addSensor(SensorId::TiltRollAvg, 0, degreeUnit, (char*)"Roll Avg", true);
-    // dataModel.disableSensor(SensorId::TiltPitchMin);
-    // dataModel.disableSensor(SensorId::TiltPitchMax);
-    // dataModel.disableSensor(SensorId::TiltPitchAvg);
 }
 
 void AccelerometerHandler::init()

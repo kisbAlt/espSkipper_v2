@@ -9,8 +9,11 @@
 #include "stringTranslator.hpp"
 #include "buttonHandler.hpp"
 #include "ledHandler.hpp"
+#include "settingsHandler.hpp"
 
-InstrumentDataModel instrumentDataModel;
+Settings settings;
+
+InstrumentDataModel instrumentDataModel(settings);
 DisplayHandler displayHandler(instrumentDataModel);
 AccelerometerHandler accelerometerHandler(instrumentDataModel);
 GpsHandler gpsHandler(instrumentDataModel);
@@ -21,7 +24,7 @@ ButtonHandler btn3(14);
 ButtonHandler btn4(21);
 TaskHandle_t SensorTaskHandle;
 
-LedHandler btnLed(3);
+LedHandler btnLed(3 , settings);
 
 // 1. Define the task that will run on Core 0
 void sensorDisplayTask(void *pvParameters) {

@@ -20,7 +20,6 @@ GpsHandler::GpsHandler(InstrumentDataModel& dataModel) : dataModel(dataModel)
     dataModel.addSensor(SensorId::DateTimeDay, 0, SensorUnit(SensorUnitEnum::BlankUnit), (char*)"Day");
     dataModel.addSensor(SensorId::DateTimeMonth, 0, SensorUnit(SensorUnitEnum::BlankUnit), (char*)"Month");
     dataModel.addSensor(SensorId::DateTimeYear, 0, SensorUnit(SensorUnitEnum::BlankUnit), (char*)"Year");
-    dataModel.disableSensor(SensorId::MinGpsSpeed);
 }
 
 void GpsHandler::init()
