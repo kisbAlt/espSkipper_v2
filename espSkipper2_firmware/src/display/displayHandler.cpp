@@ -20,15 +20,19 @@ int radius = 25;
 int circleX = 200, circleY = 300;
 int circleDx = -7, circleDy = -5;
 
-int updateCounter = 0;
+uint updateCounter = 0;
 unsigned long lastUpdate = 0;
 
-int countDigits4(int x) {
+int countDigits4(int x)
+{
     int n = (x < 0) ? -x : x;
 
-    if (n < 100) {
+    if (n < 100)
+    {
         return (n < 10) ? 1 : 2;
-    } else {
+    }
+    else
+    {
         return (n < 1000) ? 3 : 4;
     }
 }
@@ -54,19 +58,18 @@ void DisplayHandler::convertValueToString(char *valueStr, int len, SensorValue v
 
 int DisplayHandler::currentSensorDrawn() const
 {
-        switch (currentLayout)
+    switch (currentLayout)
     {
-        case DisplayLayout::ThreeColTwoRow:
-            {
-                return 7;
-            }
+    case DisplayLayout::ThreeColTwoRow:
+    {
+        return 7;
+    }
     }
     return 0;
-
 }
 
-DisplayHandler::DisplayHandler(InstrumentDataModel &dataModel, const Settings& settings) : dataModel(dataModel), settings(settings),
-                                                                                        lcd(LCD_CS, LCD_DC, LCD_RES, -1, -1), currentLayout(DisplayLayout::ThreeColTwoRow)
+DisplayHandler::DisplayHandler(InstrumentDataModel &dataModel, const Settings &settings) : dataModel(dataModel), settings(settings),
+                                                                                           lcd(LCD_CS, LCD_DC, LCD_RES, -1, -1), currentLayout(DisplayLayout::ThreeColTwoRow)
 {
 }
 
@@ -77,19 +80,11 @@ void DisplayHandler::init()
     lcd.update();
 }
 
-void DisplayHandler::updateDisplay(UpdatePage page)
+void DisplayHandler::updateDisplay()
 {
     lastUpdate = millis();
     lcd.clear(COLOR_NEUTRAL);
-    switch (page)
-    {
-        case UpdatePage::MAIN_SCREEN:
-            DrawLayout();
-            break;
-        case UpdatePage::SETTINGS_SCREEN:
-            DrawSettingsPage();
-            break;
-    }
+    DrawLayout();
     lcd.update();
     updateCounter++;
 }
@@ -162,8 +157,11 @@ void DisplayHandler::DrawLayout()
     }
 }
 
-void DisplayHandler::DrawSettingsPage()
+void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
 {
+    lastUpdate = millis();
+    lcd.clear(COLOR_NEUTRAL);
+
     DisplayUtils::DrawTextCentered(lcd, 15, "Settings", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
     for (size_t i = 0; i < settings.getSettingsCount(); i++)
     {
@@ -171,24 +169,41 @@ void DisplayHandler::DrawSettingsPage()
         const char *settingName = setting.GetString();
         char valueStr[32];
 
-        std::visit([&valueStr](const auto &arg)
-                   {
+        // Pass the raw variant directly to std::visit
+        std::visit([&valueStr](const auto &arg) {
             using T = std::decay_t<decltype(arg)>;
 
             if constexpr (std::is_same_v<T, float>) {
                 dtostrf(arg, 1, 1, valueStr);
             } 
             else if constexpr (std::is_same_v<T, int> || std::is_same_v<T, uint8_t>) {
-                snprintf(valueStr, sizeof(valueStr), "%d", arg);
+                snprintf(valueStr, sizeof(valueStr), "%d", static_cast<int>(arg));
             } 
             else if constexpr (std::is_same_v<T, bool>) {
                 snprintf(valueStr, sizeof(valueStr), "%s", arg ? "On" : "Off");
-            } }, setting.defaultValue);
+            }
+        }, settings.getValueVariant(i));
 
-        DisplayUtils::DrawText(lcd, 10, 40 + i * 30, settingName, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
-        DisplayUtils::DrawText(lcd, 255, 40 + i * 30, valueStr, COLOR_RED, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+        const int y_pos = 40 + i * 30;
+        if (status.isEditing && status.currentSettingIndex == i)
+        {
+            lcd.fillRect(2, y_pos - 4, 296, 24, COLOR_BLACK);
+            DisplayUtils::DrawText(lcd, 10, y_pos, settingName, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
+            DisplayUtils::DrawText(lcd, 255, y_pos, valueStr, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+        }
+        else
+        {
+            DisplayUtils::DrawText(lcd, 10, y_pos, settingName, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
+            DisplayUtils::DrawText(lcd, 255, y_pos, valueStr, COLOR_RED, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+            if (status.currentSettingIndex == i)
+            {
+                lcd.drawRect(2, y_pos - 4, 296, 24, COLOR_BLACK);
+            }
+        }
     }
-    
+
+    lcd.update();
+    updateCounter++;
 }
 
 void DisplayHandler::ResetDisplay()
@@ -231,9 +246,12 @@ void DisplayHandler::stepFocusedSensor()
 
 void DisplayHandler::nextDisplayPage()
 {
-    if((currentSensorDrawn() + (pageIndex * currentSensorDrawn()-pageIndex)) < dataModel.getActiveSensorCount()) {
+    if ((currentSensorDrawn() + (pageIndex * currentSensorDrawn() - pageIndex)) < dataModel.getActiveSensorCount())
+    {
         pageIndex++;
-    } else {
+    }
+    else
+    {
         pageIndex = 0;
     }
 }

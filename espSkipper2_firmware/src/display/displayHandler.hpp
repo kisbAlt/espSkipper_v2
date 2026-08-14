@@ -12,6 +12,11 @@ enum class UpdatePage {
     SETTINGS_SCREEN
 };
 
+struct SettingsDisplayStatus {
+    uint8_t currentSettingIndex = 0;
+    bool isEditing = false;
+};
+
 class DisplayHandler
 {
 private:
@@ -34,14 +39,14 @@ private:
     SensorId focusedSensor = SensorId::GpsSpeed;
     void convertValueToString(char *valueStr, int len, SensorValue value);
     int currentSensorDrawn() const;
-
+    
 public:
     DisplayHandler(InstrumentDataModel &dataModel, const Settings& settings);
     void init();
-    void updateDisplay(UpdatePage page = UpdatePage::MAIN_SCREEN);
+    void updateDisplay();
     void DrawLayout();
-    void DrawSettingsPage();
     void stepFocusedSensor();
     void nextDisplayPage();
     void ResetDisplay();
+    void DrawSettingsPage(const SettingsDisplayStatus &status);
 };

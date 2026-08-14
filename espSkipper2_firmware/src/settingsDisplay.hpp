@@ -2,10 +2,10 @@
 #include "buttonHandler.hpp"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "display/displayHandler.hpp"
 
 // forward declerations
 class Settings;
-class DisplayHandler;
 
 class SettingsDisplay
 {
@@ -15,9 +15,10 @@ public:
     void handleButtonPress(ButtonEvent btnEvent, ButtonName btnName);
 private:
     bool processButtonEvent(ButtonEvent btnEvent, ButtonName btnName);
+    SettingsDisplayStatus status;
     Settings& settings;
     DisplayHandler& displayHandler;
-// FreeRTOS Native Primitives
+    // FreeRTOS Native Primitives
     SemaphoreHandle_t dataMutex;
     SemaphoreHandle_t wakeupSemaphore;
     ButtonEvent lastButtonEvent;

@@ -24,6 +24,54 @@ bool Settings::isSensorDisabled(SensorId id) const
     return disabledSensors[static_cast<size_t>(id)];
 }
 
+const SettingDef &Settings::getSettingDef(SettingsKey key) const
+{
+    std::size_t idx = getIndex(key);
+    return getSettingDef(idx);
+}
+
+const SettingDef &Settings::getSettingDef(size_t index) const
+{
+    return Schema[index];
+}
+
+void Settings::setNextValue(size_t index)
+{
+    const OptionList& opts = Schema[index].options;
+
+    if (opts.count == 0) return;
+
+    std::size_t currentOptionIdx = 0;
+    for (std::size_t i = 0; i < opts.count; ++i) {
+        if (opts.items[i] == currentValues[index]) {
+            currentOptionIdx = i;
+            break;
+        }
+    }
+
+    std::size_t nextIdx = (currentOptionIdx + 1) % opts.count;
+    currentValues[index] = opts.items[nextIdx];
+}
+
+void Settings::setPreviousValue(size_t index)
+{
+    const OptionList& opts = Schema[index].options;
+
+    if (opts.count == 0) return;
+
+    std::size_t currentOptionIdx = 0;
+    for (std::size_t i = 0; i < opts.count; ++i) {
+        if (opts.items[i] == currentValues[index]) {
+            currentOptionIdx = i;
+            break;
+        }
+    }
+
+    std::size_t prevIdx = (currentOptionIdx == 0) ? (opts.count - 1) : (currentOptionIdx - 1);
+    currentValues[index] = opts.items[prevIdx];
+    return;
+}
+
 void Settings::disableSensor(SensorId id)
 {
     if (id < SensorId::MAX_SENSORS)
