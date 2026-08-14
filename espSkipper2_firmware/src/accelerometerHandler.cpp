@@ -11,13 +11,13 @@ AccelerometerHandler::AccelerometerHandler(InstrumentDataModel& dataModel) : dat
 {
     SensorUnit degreeUnit = SensorUnit(SensorUnitEnum::Degrees);
     dataModel.addSensor(SensorId::TiltPitch, 0, degreeUnit, (char*)"Tilt Pitch");
-    dataModel.addSensor(SensorId::TiltPitchMin, 0.0f, degreeUnit, (char*)"Pitch Min");
-    dataModel.addSensor(SensorId::TiltPitchMax, 0.0f, degreeUnit, (char*)"Pitch Max");
-    dataModel.addSensor(SensorId::TiltPitchAvg, 0.0f, degreeUnit, (char*)"Pitch Avg", true);
-    dataModel.addSensor(SensorId::TiltRoll, 0.0f, degreeUnit, (char*)"Tilt Roll");
-    dataModel.addSensor(SensorId::TiltRollMin, 0.0f, degreeUnit, (char*)"Roll Min");
-    dataModel.addSensor(SensorId::TiltRollMax, 0.0f, degreeUnit, (char*)"Roll Max");
-    dataModel.addSensor(SensorId::TiltRollAvg, 0.0f, degreeUnit, (char*)"Roll Avg", true);
+    dataModel.addSensor(SensorId::TiltPitchMin, 0, degreeUnit, (char*)"Pitch Min");
+    dataModel.addSensor(SensorId::TiltPitchMax, 0, degreeUnit, (char*)"Pitch Max");
+    dataModel.addSensor(SensorId::TiltPitchAvg, 0, degreeUnit, (char*)"Pitch Avg", true);
+    dataModel.addSensor(SensorId::TiltRoll, 0, degreeUnit, (char*)"Tilt Roll");
+    dataModel.addSensor(SensorId::TiltRollMin, 0, degreeUnit, (char*)"Roll Min");
+    dataModel.addSensor(SensorId::TiltRollMax, 0, degreeUnit, (char*)"Roll Max");
+    dataModel.addSensor(SensorId::TiltRollAvg, 0, degreeUnit, (char*)"Roll Avg", true);
     // dataModel.disableSensor(SensorId::TiltPitchMin);
     // dataModel.disableSensor(SensorId::TiltPitchMax);
     // dataModel.disableSensor(SensorId::TiltPitchAvg);
@@ -39,27 +39,30 @@ void AccelerometerHandler::init()
 
 void AccelerometerHandler::readAccelerometerData()
 {
-    float raw_x = SensorOne.readFloatAccelX();
-    float raw_y = SensorOne.readFloatAccelY();
-    float raw_z = SensorOne.readFloatAccelZ();
+    const float raw_x = SensorOne.readFloatAccelX();
+    const float raw_y = SensorOne.readFloatAccelY();
+    const float raw_z = SensorOne.readFloatAccelZ();
 
     // Swapping Y and Z because gravity is acting on the physical Y-axis
-    float virt_x = raw_x;  
-    float virt_y = -raw_z; // The negative sign keeps the rotation direction standard
-    float virt_z = raw_y;  // Change to -raw_y if your angles are perfectly upside down
+    const float virt_x = raw_x;  
+    const float virt_y = -raw_z; // The negative sign keeps the rotation direction standard
+    const float virt_z = raw_y;  // Change to -raw_y if your angles are perfectly upside down
 
     // Now do the math using the virtual axes
-    float lastRoll = atan2(-virt_x, sqrt((virt_y * virt_y) + (virt_z * virt_z))) * (180.0 / PI);
-    float lastPitch  = atan2(virt_y, virt_z) * (180.0 / PI);
+    const float lastRoll = atan2(-virt_x, sqrt((virt_y * virt_y) + (virt_z * virt_z))) * (180.0 / PI);
+    const float lastPitch  = atan2(virt_y, virt_z) * (180.0 / PI);
 
-    dataModel.updateSensor(SensorId::TiltPitch, lastPitch);
-    dataModel.updateSensor(SensorId::TiltPitchAvg, lastPitch);
-    dataModel.updateSensorIfSmaller(SensorId::TiltPitchMin, lastPitch);
-    dataModel.updateSensorIfLarger(SensorId::TiltPitchMax, lastPitch);
-    dataModel.updateSensor(SensorId::TiltRoll, lastRoll);
-    dataModel.updateSensor(SensorId::TiltRollAvg, lastRoll);
-    dataModel.updateSensorIfSmaller(SensorId::TiltRollMin, lastRoll);
-    dataModel.updateSensorIfLarger(SensorId::TiltRollMax, lastRoll);
+    const int rollRounded = InstrumentDataModel::fast_round_positive(lastRoll);
+    const int pitchRounded = InstrumentDataModel::fast_round_positive(lastPitch);
+
+    dataModel.updateSensor(SensorId::TiltPitch, pitchRounded);
+    dataModel.updateSensor(SensorId::TiltPitchAvg, pitchRounded);
+    dataModel.updateSensorIfSmaller(SensorId::TiltPitchMin, pitchRounded);
+    dataModel.updateSensorIfLarger(SensorId::TiltPitchMax, pitchRounded);
+    dataModel.updateSensor(SensorId::TiltRoll, rollRounded);
+    dataModel.updateSensor(SensorId::TiltRollAvg, rollRounded);
+    dataModel.updateSensorIfSmaller(SensorId::TiltRollMin, rollRounded);
+    dataModel.updateSensorIfLarger(SensorId::TiltRollMax, rollRounded);
 
     // Serial.print("\nAccelerometer:\n");
 

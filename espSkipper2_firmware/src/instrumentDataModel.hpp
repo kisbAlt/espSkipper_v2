@@ -15,6 +15,7 @@ enum class SensorId : size_t
     MinGpsSpeed,
     AvgGpsSpeed,
     SatelliteCount,
+    GpsCourse,
     WaterDepth,
     WindSpeed,
     WindDirection,
@@ -57,7 +58,10 @@ class SensorUnit {
     const char* GetString();
 };
 
-using SensorValue = std::variant<float, int, char*>;
+struct SensorValueString {
+    char text[32];
+};
+using SensorValue = std::variant<float, int, SensorValueString>;
 
 class InstrumentDataModel
 {
@@ -97,6 +101,9 @@ public:
     bool isSensorEnabledAndHaveData(SensorId id) const;
     std::vector<std::pair<SensorId, SensorValue>> getDisplaySnapshot() const;
     int getActiveSensorCount() const;
+    inline static int fast_round_positive(float x) {
+        return static_cast<int>(x + 0.5f);
+    }
 
     template <typename Callback>
     void drawActiveSensors(Callback cb) const

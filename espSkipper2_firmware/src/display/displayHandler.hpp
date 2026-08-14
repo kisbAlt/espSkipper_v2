@@ -24,7 +24,7 @@ private:
     DisplayLayout currentLayout;
     InstrumentDataModel &dataModel;
     SensorId focusedSensor = SensorId::GpsSpeed;
-    void convertValueToString(char *valueStr, SensorValue value);
+    void convertValueToString(char *valueStr, int len, SensorValue value);
     int currentSensorDrawn() const;
 
 public:

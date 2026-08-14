@@ -32,9 +32,9 @@ int countDigits4(int x) {
     }
 }
 
-void DisplayHandler::convertValueToString(char *valueStr, SensorValue value)
+void DisplayHandler::convertValueToString(char *valueStr, int len, SensorValue value)
 {
-    std::visit([&valueStr](const auto &arg)
+    std::visit([&valueStr, len](const auto &arg)
                {
         using T = std::decay_t<decltype(arg)>;
 
@@ -42,10 +42,12 @@ void DisplayHandler::convertValueToString(char *valueStr, SensorValue value)
             dtostrf(arg, 1, 1, valueStr);
         } 
         else if constexpr (std::is_same_v<T, int>) {
-            snprintf(valueStr, sizeof(valueStr), "%d", arg);
+            snprintf(valueStr, len, "%d", arg);
         } 
-        else if constexpr (std::is_same_v<T, const char*>) {
-            snprintf(valueStr, sizeof(valueStr), "%s", arg);
+        else if constexpr (std::is_same_v<T, SensorValueString>) {
+            Serial.print("CourseDISP:     ");
+            Serial.println(arg.text);
+            snprintf(valueStr, len, "%s", arg.text);
         } }, value);
 }
 
@@ -110,7 +112,7 @@ void DisplayHandler::DrawLayout()
                                         const char *unitText = unit.GetString();
                                         int valueLen = strlen(unitText);
                                         char valueStr[32];
-                                        convertValueToString(valueStr, value);
+                                        convertValueToString(valueStr, sizeof(valueStr), value);
                                         if (id == focusedSensor)
                                         {
                                             const int top_margin = 10;

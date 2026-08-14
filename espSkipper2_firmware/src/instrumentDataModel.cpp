@@ -10,8 +10,7 @@ void InstrumentDataModel::updateSensor(SensorId id, SensorValue val)
 void InstrumentDataModel::updateSensorIfLarger(SensorId id, SensorValue val)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    std::visit([&val, this, id](auto &currentVal)
-               {
+    std::visit([&val, this, id](auto& currentVal) {
         using T = std::decay_t<decltype(currentVal)>;
         
         if constexpr (std::is_arithmetic_v<T>) {
@@ -19,14 +18,14 @@ void InstrumentDataModel::updateSensorIfLarger(SensorId id, SensorValue val)
             if(!m_data[static_cast<size_t>(id)].hasData ||static_cast<T>(currentVal < newVal)) {
                 m_data[static_cast<size_t>(id)].UpdateValue(newVal);
             }
-        } }, m_data[static_cast<size_t>(id)].value);
+        }
+    }, m_data[static_cast<size_t>(id)].value);
 }
 
 void InstrumentDataModel::updateSensorIfSmaller(SensorId id, SensorValue val)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    std::visit([&val, this, id](auto &currentVal)
-               {
+    std::visit([&val, this, id](auto& currentVal) {
         using T = std::decay_t<decltype(currentVal)>;
         
         if constexpr (std::is_arithmetic_v<T>) {
@@ -34,7 +33,8 @@ void InstrumentDataModel::updateSensorIfSmaller(SensorId id, SensorValue val)
             if(!m_data[static_cast<size_t>(id)].hasData || static_cast<T>(currentVal > newVal)) {
                 m_data[static_cast<size_t>(id)].UpdateValue(newVal);
             }
-        } }, m_data[static_cast<size_t>(id)].value);
+        }
+    }, m_data[static_cast<size_t>(id)].value);
 }
 
 void InstrumentDataModel::addSensor(SensorId id, SensorValue val, SensorUnit unit, char *title, bool isAverage)
@@ -71,13 +71,13 @@ bool InstrumentDataModel::sensorHaveData(SensorId id) const
 SensorValue InstrumentDataModel::getSensorValue(SensorId id) const
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return m_data[static_cast<size_t>(id)].value;
+   return m_data[static_cast<size_t>(id)].value;
 }
 
 bool InstrumentDataModel::isSensorEnabledAndHaveData(SensorId id) const
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    const auto &record = m_data[static_cast<size_t>(id)];
+    const auto& record = m_data[static_cast<size_t>(id)];
     return record.enabled && record.hasData;
 }
 
@@ -145,45 +145,21 @@ const char *SensorUnit::GetString()
 
 void InstrumentDataModel::SensorRecord::UpdateValue(SensorValue newValue)
 {
-    // 1. FIX: Initialize if we have NO data at all (average or not), 
-    // OR if we are averaging and the incoming data type changed (preventing std::get crash)
-    if (!hasData || (isAverage && value.index() != newValue.index()))
-    {
+    if (!isAverage || !hasData) {
         value = newValue;
         dataCount = isAverage ? 1 : 0;
         hasData = true;
         return;
     }
-
-    if (isAverage)
-    {
-        dataCount++;
-        std::visit([&newValue, this](auto &currentVal)
-                   {
-            using T = std::decay_t<decltype(currentVal)>;
+    
+    dataCount++;
+    std::visit([&newValue, this](auto& currentVal) {
+        using T = std::decay_t<decltype(currentVal)>;
+        
+        if constexpr (std::is_arithmetic_v<T>) {
+            const T newVal = std::get<T>(newValue);
             
-            if constexpr (std::is_arithmetic_v<T>) {
-                // Safe: The first if-statement guarantees value and newValue have the same index here
-                const T newVal = std::get<T>(newValue);
-                
-                currentVal = static_cast<T>(currentVal + (newVal - currentVal) / static_cast<float>(dataCount));
-            } }, value);
-    }
-    else
-    {
-        // Double-visit handles type mismatches automatically and safely
-        std::visit([](auto &current, const auto &incoming)
-                   {
-            using T_curr = std::decay_t<decltype(current)>;
-            using T_inc  = std::decay_t<decltype(incoming)>;
-
-            if constexpr (std::is_integral_v<T_curr> && std::is_floating_point_v<T_inc>) {
-                // Current is integer, incoming is float: Round to nearest.
-                current = static_cast<T_curr>(incoming >= T_inc{0} ? incoming + T_inc{0.5} : incoming - T_inc{0.5});
-            } 
-            else if constexpr (std::is_arithmetic_v<T_curr> && std::is_arithmetic_v<T_inc>) {
-                // Both floats, both ints, or int-to-float: just assign it directly
-                current = static_cast<T_curr>(incoming);
-            } }, value, newValue);
-    }
+            currentVal = static_cast<T>(currentVal + (newVal - currentVal) / static_cast<float>(dataCount));
+        }
+    }, value);
 }
