@@ -75,11 +75,19 @@ void DisplayHandler::init()
     lcd.update();
 }
 
-void DisplayHandler::updateDisplay()
+void DisplayHandler::updateDisplay(UpdatePage page)
 {
     lastUpdate = millis();
     lcd.clear(COLOR_NEUTRAL);
-    DrawLayout();
+    switch (page)
+    {
+        case UpdatePage::MAIN_SCREEN:
+            DrawLayout();
+            break;
+        case UpdatePage::SETTINGS_SCREEN:
+            DrawSettingsPage();
+            break;
+    }
     lcd.update();
     updateCounter++;
 }
@@ -150,6 +158,11 @@ void DisplayHandler::DrawLayout()
     default:
         break;
     }
+}
+
+void DisplayHandler::DrawSettingsPage()
+{
+    DisplayUtils::DrawTextCentered(lcd, 180, "Settings", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
 }
 
 void DisplayHandler::ResetDisplay()

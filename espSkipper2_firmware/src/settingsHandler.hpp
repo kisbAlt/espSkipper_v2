@@ -3,6 +3,9 @@
 #include <cstddef>
 #include <Arduino.h>
 #include "instrumentDataFormats.hpp"
+#include "buttonHandler.hpp"
+#include <mutex>
+#include <condition_variable>
 
 class Settings {
 public:

@@ -10,6 +10,7 @@
 #include "buttonHandler.hpp"
 #include "ledHandler.hpp"
 #include "settingsHandler.hpp"
+#include "settingsDisplay.hpp"
 
 Settings settings;
 
@@ -17,6 +18,7 @@ InstrumentDataModel instrumentDataModel(settings);
 DisplayHandler displayHandler(instrumentDataModel);
 AccelerometerHandler accelerometerHandler(instrumentDataModel);
 GpsHandler gpsHandler(instrumentDataModel);
+SettingsDisplay settingsDisplay(settings, displayHandler);
 
 ButtonHandler btn1(8);
 ButtonHandler btn2(17);
@@ -26,19 +28,23 @@ TaskHandle_t SensorTaskHandle;
 
 LedHandler btnLed(3 , settings);
 
+enum class AppState {
+    MAIN_SCREEN,
+    SETTINGS_SCREEN
+};
+AppState currentState = AppState::MAIN_SCREEN;
+
 // 1. Define the task that will run on Core 0
 void sensorDisplayTask(void *pvParameters) {
     displayHandler.ResetDisplay();
-    // FreeRTOS tasks need an infinite loop
     for(;;) {
-        // Heavy blocking operations go here
+        if (currentState == AppState::SETTINGS_SCREEN) {
+            settingsDisplay.drawSettingsUI();
+            currentState = AppState::MAIN_SCREEN;
+        }
         displayHandler.updateDisplay();
         accelerometerHandler.readAccelerometerData();
         gpsHandler.updateGpsData();
-        
-        // vTaskDelay is the FreeRTOS equivalent of delay().
-        // It tells Core 0 to wait for 500ms before running the loop again, 
-        // yielding the core to background WiFi/Bluetooth tasks in the meantime.
         vTaskDelay(pdMS_TO_TICKS(500)); 
     }
 }
@@ -89,6 +95,10 @@ void setup() {
 }
 
 void handleButtonEvent(const ButtonName btnName, ButtonEvent event) {
+    if(currentState == AppState::SETTINGS_SCREEN) {
+        settingsDisplay.handleButtonPress(event, btnName);
+        return;
+    }
     switch(event) {
         case ButtonEvent::SINGLE_CLICK:
             switch(btnName) {
@@ -97,6 +107,10 @@ void handleButtonEvent(const ButtonName btnName, ButtonEvent event) {
                     break;
                 case ButtonName::BUTTON1:
                     displayHandler.nextDisplayPage();
+                    break;
+                case ButtonName::BUTTON3:
+                    currentState = AppState::SETTINGS_SCREEN;
+                    break;
             }
             Serial.printf("%d: Single Click\n", btnName);
             break;
@@ -116,8 +130,6 @@ void handleButtonEvent(const ButtonName btnName, ButtonEvent event) {
 }
 
 void loop() {
-    // 3. The main loop runs on Core 1 by default.
-    // It will now exclusively handle buttons without waiting for sensors.
     handleButtonEvent(ButtonName::BUTTON0, btn1.update());
     handleButtonEvent(ButtonName::BUTTON1, btn2.update());
     handleButtonEvent(ButtonName::BUTTON2, btn3.update());

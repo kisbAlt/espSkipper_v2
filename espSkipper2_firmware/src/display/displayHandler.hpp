@@ -6,6 +6,11 @@
 
 #define DISPLAY_WIDTH 300
 
+enum class UpdatePage {
+    MAIN_SCREEN,
+    SETTINGS_SCREEN
+};
+
 class DisplayHandler
 {
 private:
@@ -30,8 +35,9 @@ private:
 public:
     DisplayHandler(InstrumentDataModel &dataModel);
     void init();
-    void updateDisplay();
+    void updateDisplay(UpdatePage page = UpdatePage::MAIN_SCREEN);
     void DrawLayout();
+    void DrawSettingsPage();
     void stepFocusedSensor();
     void nextDisplayPage();
     void ResetDisplay();
