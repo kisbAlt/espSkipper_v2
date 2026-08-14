@@ -42,7 +42,6 @@ void DisplayHandler::convertValueToString(char *valueStr, SensorValue value)
             dtostrf(arg, 1, 1, valueStr);
         } 
         else if constexpr (std::is_same_v<T, int>) {
-            const int digits = countDigits4(arg);
             snprintf(valueStr, sizeof(valueStr), "%d", arg);
         } 
         else if constexpr (std::is_same_v<T, const char*>) {
@@ -122,7 +121,8 @@ void DisplayHandler::DrawLayout()
                                         }
                                         else
                                         {
-                                            if((pageIndex * currentSensorDrawn() - pageIndex) >= index+1) {
+                                            int adjustment = (pageIndex > 0 && static_cast<int>(focusedSensor) < index) ? 1 : 0;
+                                            if(pageIndex * (currentSensorDrawn() - 1) + adjustment > index) {
                                                 return; // Skip drawing this sensor if it's not on the current page
                                             }
                                             // Calculate the row (0 to 2) and column (0 to 1) based on the index
@@ -190,9 +190,9 @@ void DisplayHandler::stepFocusedSensor()
 
 void DisplayHandler::nextDisplayPage()
 {
-    // if((currentSensorDrawn() + (pageIndex * currentSensorDrawn()-pageIndex)) < dataModel.getActiveSensorCount()) {
-    //     pageIndex++;
-    // } else {
-    //     pageIndex = 0;
-    // }
+    if((currentSensorDrawn() + (pageIndex * currentSensorDrawn()-pageIndex)) < dataModel.getActiveSensorCount()) {
+        pageIndex++;
+    } else {
+        pageIndex = 0;
+    }
 }

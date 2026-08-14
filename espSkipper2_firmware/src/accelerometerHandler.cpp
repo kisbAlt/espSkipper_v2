@@ -10,7 +10,7 @@ LIS3DH SensorOne(SPI_MODE, LIS3DH_CS);
 AccelerometerHandler::AccelerometerHandler(InstrumentDataModel& dataModel) : dataModel(dataModel)
 {
     SensorUnit degreeUnit = SensorUnit(SensorUnitEnum::Degrees);
-    dataModel.addSensor(SensorId::TiltPitch, 0.0f, degreeUnit, (char*)"Tilt Pitch");
+    dataModel.addSensor(SensorId::TiltPitch, 0, degreeUnit, (char*)"Tilt Pitch");
     dataModel.addSensor(SensorId::TiltPitchMin, 0.0f, degreeUnit, (char*)"Pitch Min");
     dataModel.addSensor(SensorId::TiltPitchMax, 0.0f, degreeUnit, (char*)"Pitch Max");
     dataModel.addSensor(SensorId::TiltPitchAvg, 0.0f, degreeUnit, (char*)"Pitch Avg", true);
@@ -18,9 +18,9 @@ AccelerometerHandler::AccelerometerHandler(InstrumentDataModel& dataModel) : dat
     dataModel.addSensor(SensorId::TiltRollMin, 0.0f, degreeUnit, (char*)"Roll Min");
     dataModel.addSensor(SensorId::TiltRollMax, 0.0f, degreeUnit, (char*)"Roll Max");
     dataModel.addSensor(SensorId::TiltRollAvg, 0.0f, degreeUnit, (char*)"Roll Avg", true);
-    dataModel.disableSensor(SensorId::TiltPitchMin);
-    dataModel.disableSensor(SensorId::TiltPitchMax);
-    dataModel.disableSensor(SensorId::TiltPitchAvg);
+    // dataModel.disableSensor(SensorId::TiltPitchMin);
+    // dataModel.disableSensor(SensorId::TiltPitchMax);
+    // dataModel.disableSensor(SensorId::TiltPitchAvg);
 }
 
 void AccelerometerHandler::init()
