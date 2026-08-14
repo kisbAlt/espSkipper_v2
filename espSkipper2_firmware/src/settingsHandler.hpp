@@ -15,5 +15,5 @@ public:
     uint8_t getButtonBrightnessLevel() const { return buttonBrightnessLevel; }
 private:
     bool disabledSensors[static_cast<size_t>(SensorId::MAX_SENSORS)] = {false};
-    uint8_t buttonBrightnessLevel = 255;
+    uint8_t buttonBrightnessLevel = 10;
 };

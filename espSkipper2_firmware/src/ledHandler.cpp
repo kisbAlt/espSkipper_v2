@@ -1,61 +1,53 @@
 #include "ledHandler.hpp"
 #include "Arduino.h"
 
-LedHandler::LedHandler(uint8_t pin, const Settings& settings)
-    : _pin(pin), _settings(settings), _isOn(false), _isBlinking(false), 
-      _blinkInterval(0), _lastBlinkTime(0) {
-        _brightness = settings.getButtonBrightnessLevel();
-      }
+// I added pwmChannel as a parameter, defaulting to 0 for your use case
+LedHandler::LedHandler(uint8_t pin, const Settings &settings, uint8_t pwmChannel)
+    : _pin(pin), _pwmChannel(pwmChannel), _settings(settings), _isOn(false), _isBlinking(false),
+      _blinkInterval(0), _lastBlinkTime(0)
+{
+}
 
-void LedHandler::begin() {
-    // Legacy Core v2.x API (only use if v3.x fails to compile)
-    const int pwmChannel = 0; // You'd need to manage channels per pin
-    ledcSetup(pwmChannel, 5000, 8);
-    ledcAttachPin(_pin, pwmChannel);
+void LedHandler::begin()
+{
+    // Setup the channel and attach the pin to it
+    ledcSetup(_pwmChannel, 5000, 8);
+    ledcAttachPin(_pin, _pwmChannel);
     off();
 }
 
-void LedHandler::setBrightness(uint8_t brightness) {
-    _brightness = brightness;
-    
-    // If the LED is currently ON and not blinking, apply immediately
-    if (_isOn && !_isBlinking) {
-        ledcWrite(_pin, _brightness);
-    }
-}
-
-void LedHandler::on() {
+void LedHandler::on()
+{
     _isBlinking = false;
     _isOn = true;
-    ledcWrite(_pin, _brightness); // Apply current brightness level
+    ledcWrite(_pwmChannel, _settings.getButtonBrightnessLevel()); // Changed _pin to _pwmChannel
 }
 
-void LedHandler::off() {
+void LedHandler::off()
+{
     _isBlinking = false;
     _isOn = false;
-    ledcWrite(_pin, 0); // 0 duty cycle = OFF
+    ledcWrite(_pwmChannel, 0); // Changed _pin to _pwmChannel
 }
 
-void LedHandler::toggle() {
+void LedHandler::toggle()
+{
     _isBlinking = false;
     _isOn = !_isOn;
-    ledcWrite(_pin, _isOn ? _brightness : 0);
+    ledcWrite(_pwmChannel, _isOn ? _settings.getButtonBrightnessLevel() : 0); // Changed _pin to _pwmChannel
 }
 
-void LedHandler::blink(uint32_t intervalMillis) {
-    _isBlinking = true;
-    _blinkInterval = intervalMillis;
-}
-
-void LedHandler::update() {
-    if (_isBlinking) {
+void LedHandler::update()
+{
+    if (_isBlinking)
+    {
         unsigned long currentMillis = millis();
-        if (currentMillis - _lastBlinkTime >= _blinkInterval) {
+        if (currentMillis - _lastBlinkTime >= _blinkInterval)
+        {
             _lastBlinkTime = currentMillis;
-            
-            // Toggle the current state
+
             _isOn = !_isOn;
-            ledcWrite(_pin, _isOn ? _brightness : 0);
+            ledcWrite(_pwmChannel, _isOn ? _settings.getButtonBrightnessLevel() : 0); // Changed _pin to _pwmChannel
         }
     }
 }
