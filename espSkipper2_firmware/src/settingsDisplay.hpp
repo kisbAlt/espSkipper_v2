@@ -1,7 +1,7 @@
 #pragma once
-#include <mutex>
 #include "buttonHandler.hpp"
-#include <condition_variable>
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 // forward declerations
 class Settings;
@@ -14,11 +14,12 @@ public:
     void drawSettingsUI();
     void handleButtonPress(ButtonEvent btnEvent, ButtonName btnName);
 private:
+    bool processButtonEvent(ButtonEvent btnEvent, ButtonName btnName);
     Settings& settings;
     DisplayHandler& displayHandler;
-    std::mutex uiMutex;
-    bool dirty = false;
+// FreeRTOS Native Primitives
+    SemaphoreHandle_t dataMutex;
+    SemaphoreHandle_t wakeupSemaphore;
     ButtonEvent lastButtonEvent;
     ButtonName lastButtonName;
-    std::condition_variable cv;
 };

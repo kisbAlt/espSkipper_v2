@@ -1,52 +1,79 @@
-#include "SettingsDisplay.hpp"
+#include "settingsDisplay.hpp"
 #include "settingsHandler.hpp"
 #include "display/displayHandler.hpp"
 
 SettingsDisplay::SettingsDisplay(Settings &settings, DisplayHandler &displayHandler)
-        : settings(settings), displayHandler(displayHandler)
+    : settings(settings), displayHandler(displayHandler)
 {
+    dataMutex = xSemaphoreCreateMutex();
+    wakeupSemaphore = xSemaphoreCreateBinary();
 }
-
 
 void SettingsDisplay::handleButtonPress(ButtonEvent btnEvent, ButtonName btnName)
 {
-    std::lock_guard<std::mutex> lock(uiMutex);
-    lastButtonEvent = btnEvent;
-    lastButtonName = btnName;
-    dirty = true;
-    cv.notify_one();
+    // Safely write the button data
+    if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
+        lastButtonEvent = btnEvent;
+        lastButtonName = btnName;
+        xSemaphoreGive(dataMutex);
+    }
+    
+    // Wake up the display thread! (Equivalent to cv.notify_one)
+    xSemaphoreGive(wakeupSemaphore);
+}
+
+bool SettingsDisplay::processButtonEvent(ButtonEvent btnEvent, ButtonName btnName)
+{
+    switch(btnEvent) {
+        case ButtonEvent::SINGLE_CLICK:
+            switch(btnName) {
+                case ButtonName::BUTTON0:
+                    break;
+                case ButtonName::BUTTON1:
+                    break;
+                case ButtonName::BUTTON2:
+                    break;
+                case ButtonName::BUTTON3:
+                    return false;
+                    break;
+            }
+            Serial.printf("%d: Single Click\n", btnName);
+            break;
+        case ButtonEvent::DOUBLE_CLICK:
+            break;
+        case ButtonEvent::LONG_PRESS:
+            break;
+        case ButtonEvent::NONE:
+        default:
+            break;
+    }
+    return true;
 }
 
 void SettingsDisplay::drawSettingsUI()
 {
     bool running = true;
-        
-        // Lock mutex to set initial state
-        {
-            std::lock_guard<std::mutex> lock(uiMutex);
-            dirty = true;
+    // Force an initial draw when the screen first loads
+    displayHandler.updateDisplay(UpdatePage::SETTINGS_SCREEN);
+
+    // Make sure the semaphore is empty before we start waiting
+    xQueueReset(wakeupSemaphore); 
+
+    while (running) {
+        ButtonEvent currButtonEvent;
+        ButtonName currButtonName;
+
+        xSemaphoreTake(wakeupSemaphore, portMAX_DELAY);
+
+        // We woke up! Safely grab the button data.
+        if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
+            currButtonEvent = lastButtonEvent;
+            currButtonName = lastButtonName;
+            xSemaphoreGive(dataMutex);
         }
 
-        while (running) {
-            ButtonEvent currButtonEvent;
-            ButtonName currButtonName;
+        running = processButtonEvent(currButtonEvent, currButtonName);        
 
-            // Wait for a button press while asleep
-            {
-                std::unique_lock<std::mutex> lock(uiMutex);
-                
-                // This puts the Display Thread to sleep (0% CPU).
-                // It wakes up ONLY when injectButton() calls cv.notify_one()
-                cv.wait(lock, [this] { return dirty; });
-
-                // Capture the state quickly and release the lock
-                currButtonEvent = lastButtonEvent;
-                currButtonName = lastButtonName;
-                dirty = false;
-            }
-
-
-            // Draw the updated UI
-            displayHandler.updateDisplay(UpdatePage::SETTINGS_SCREEN);
-        }
+        displayHandler.updateDisplay(UpdatePage::SETTINGS_SCREEN);
+    }
 }

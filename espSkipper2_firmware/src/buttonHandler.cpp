@@ -1,64 +1,63 @@
 #include "buttonHandler.hpp"
 
 ButtonHandler::ButtonHandler(uint8_t pin)
-    : _pin(pin), _lastState(HIGH), _currentState(HIGH), _isPressing(false),
-      _lastDebounceTime(0), _pressedTime(0), _releasedTime(0),
-      _clickCount(0), _longPressHandled(false) {}
+    : _pin(pin), _history(0xFF), _isDown(false),
+          _pressStartTime(0), _lastReleaseTime(0),
+          _clickCount(0), _longPressTriggered(false) {}
 
 void ButtonHandler::begin() {
-    // Enable internal pull-up resistor (Button normally HIGH, goes LOW when pressed)
     pinMode(_pin, INPUT_PULLUP);
 }
 
-ButtonEvent ButtonHandler::update() {
-    ButtonEvent event = ButtonEvent::NONE;
-    bool reading = digitalRead(_pin);
-    unsigned long currentMillis = millis();
 
-    // 1. Eager Debounce Logic (Ignore noise after a state change)
-    if ((currentMillis - _lastDebounceTime) > DEBOUNCE_DELAY) {
-        if (reading != _currentState) {
-            _currentState = reading;
-            _lastDebounceTime = currentMillis; // Lockout further changes
+void ButtonHandler::process() {
+    unsigned long now = millis();
 
-            if (_currentState == LOW) { 
-                // Button was JUST pressed
-                _isPressing = true;
-                _pressedTime = currentMillis;
-                _longPressHandled = false;
-            } else { 
-                // Button was JUST released
-                _isPressing = false;
-                _releasedTime = currentMillis;
+    // 1. Shift current reading into history (active-low: 0 = pressed, 1 = released)
+    _history = (_history << 1) | digitalRead(_pin);
 
-                // Only count the release if it wasn't part of a long press
-                if (!_longPressHandled) {
-                    _clickCount++;
-                }
-            }
+    // 2. Detect stable state transitions
+    // 0b11000000 -> Confirmed transition to Pressed (stable LOW for multiple samples)
+    if (!_isDown && (_history == 0xC0 || _history == 0x80 || _history == 0x00)) {
+        _isDown = true;
+        _pressStartTime = now;
+        _longPressTriggered = false;
+    }
+    // 0b00111111 -> Confirmed transition to Released (stable HIGH for multiple samples)
+    else if (_isDown && (_history == 0x3F || _history == 0x7F || _history == 0xFF)) {
+        _isDown = false;
+        _lastReleaseTime = now;
+
+        // Only count as a click if it wasn't already consumed by a long press
+        if (!_longPressTriggered) {
+            _clickCount++;
         }
     }
 
-    // 2. Evaluate Long Press (Fires immediately while holding)
-    if (_isPressing && !_longPressHandled) {
-        if ((currentMillis - _pressedTime) > LONG_PRESS_DELAY) {
-            _longPressHandled = true;
-            _clickCount = 0; // Cancel any pending short clicks
-            event = ButtonEvent::LONG_PRESS;
+    // 3. Handle Long Press (fires while button is still held down)
+    if (_isDown && !_longPressTriggered) {
+        if (now - _pressStartTime >= LONG_PRESS_MS) {
+            _longPressTriggered = true;
+            _clickCount = 0; // Invalidate any clicks
+            if (_longPressCb) _longPressCb();
         }
     }
 
-    // 3. Evaluate Single and Double Clicks (Fires after release timeout)
-    if (!_isPressing && _clickCount > 0) {
-        if ((currentMillis - _releasedTime) > DOUBLE_CLICK_DELAY) {
+    // 4. Handle Click Resolution (Single vs Double click after release timeout)
+    if (!_isDown && _clickCount > 0) {
+        if (now - _lastReleaseTime >= MULTI_CLICK_MS) {
             if (_clickCount == 1) {
-                event = ButtonEvent::SINGLE_CLICK;
+                if (_singleClickCb) _singleClickCb();
             } else if (_clickCount >= 2) {
-                event = ButtonEvent::DOUBLE_CLICK;
+                if (_doubleClickCb) _doubleClickCb();
             }
-            _clickCount = 0; // Reset after event is dispatched
+            _clickCount = 0; // Reset
         }
     }
-
-    return event;
 }
+
+ void ButtonHandler::onSingleClick(ButtonCallback cb) { _singleClickCb = cb; }
+
+void ButtonHandler::onDoubleClick(ButtonCallback cb) { _doubleClickCb = cb; }
+
+void ButtonHandler::onLongPress(ButtonCallback cb)   { _longPressCb = cb; } 

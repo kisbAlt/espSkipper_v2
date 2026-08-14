@@ -20,122 +20,169 @@ AccelerometerHandler accelerometerHandler(instrumentDataModel);
 GpsHandler gpsHandler(instrumentDataModel);
 SettingsDisplay settingsDisplay(settings, displayHandler);
 
-ButtonHandler btn1(8);
-ButtonHandler btn2(17);
-ButtonHandler btn3(14);
-ButtonHandler btn4(21);
+ButtonHandler btn0(8);
+ButtonHandler btn1(17);
+ButtonHandler btn2(14);
+ButtonHandler btn3(21);
+void globalButtonTask(void* arg) {
+    while (true) {
+        btn0.process();
+        btn1.process();
+        btn2.process();
+        btn3.process();
+        vTaskDelay(pdMS_TO_TICKS(5));
+    }
+}
+
 TaskHandle_t SensorTaskHandle;
 
-LedHandler btnLed(3 , settings);
+LedHandler btnLed(3, settings);
 
-enum class AppState {
+enum class AppState
+{
     MAIN_SCREEN,
     SETTINGS_SCREEN
 };
 AppState currentState = AppState::MAIN_SCREEN;
 
 // 1. Define the task that will run on Core 0
-void sensorDisplayTask(void *pvParameters) {
+void sensorDisplayTask(void *pvParameters)
+{
     displayHandler.ResetDisplay();
-    for(;;) {
-        if (currentState == AppState::SETTINGS_SCREEN) {
+    for (;;)
+    {
+        if (currentState == AppState::SETTINGS_SCREEN)
+        {
             settingsDisplay.drawSettingsUI();
             currentState = AppState::MAIN_SCREEN;
         }
         displayHandler.updateDisplay();
         accelerometerHandler.readAccelerometerData();
         gpsHandler.updateGpsData();
-        vTaskDelay(pdMS_TO_TICKS(500)); 
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 
-void setup() {
-  Serial.begin(115200);
-  delay(1000); // Give serial a moment to wake up
-
-  Translator::setLanguage(0);
-
-  Serial.println("Init PINs and SPI");
-  pinMode(LIS3DH_CS, OUTPUT);
-  digitalWrite(LIS3DH_CS, HIGH);
-  pinMode(LCD_CS, OUTPUT);
-  digitalWrite(LCD_CS, HIGH);
-
-  SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
-
-  Serial.println("Init Display");
-  displayHandler.init();
-  Serial.println("Init Accelerometer");
-  accelerometerHandler.init();
-  Serial.println("Init GPS");
-  gpsHandler.init();
-
-  // Initialize buttons
-  btn1.begin();
-  btn2.begin();
-  btn3.begin();
-  btn4.begin();
-  // 2. Launch the sensor task and pin it to Core 0
-  xTaskCreatePinnedToCore(
-      sensorDisplayTask,   // The function we just wrote above
-      "SensorTask",        // A name for debugging
-      8192,                // Stack size (8KB is generous, good for displays/GPS)
-      NULL,                // Task input parameter (not needed here)
-      1,                   // Task priority (1 is standard)
-      &SensorTaskHandle,   // Task handle
-      0                    // Pin this specific task to Core 0
-  );
-
-  btnLed.begin();
-  btnLed.off();
-
-  Serial.println("Setup complete, resetting display.");
-
-  
-}
-
-void handleButtonEvent(const ButtonName btnName, ButtonEvent event) {
-    if(currentState == AppState::SETTINGS_SCREEN) {
+void handleButtonEvent(const ButtonName btnName, const ButtonEvent event)
+{
+    if (event != ButtonEvent::NONE && currentState == AppState::SETTINGS_SCREEN)
+    {
         settingsDisplay.handleButtonPress(event, btnName);
         return;
     }
-    switch(event) {
-        case ButtonEvent::SINGLE_CLICK:
-            switch(btnName) {
-                case ButtonName::BUTTON0:
-                    displayHandler.stepFocusedSensor();
-                    break;
-                case ButtonName::BUTTON1:
-                    displayHandler.nextDisplayPage();
-                    break;
-                case ButtonName::BUTTON3:
-                    currentState = AppState::SETTINGS_SCREEN;
-                    break;
-            }
-            Serial.printf("%d: Single Click\n", btnName);
+    switch (event)
+    {
+    case ButtonEvent::SINGLE_CLICK:
+        switch (btnName)
+        {
+        case ButtonName::BUTTON0:
+            displayHandler.stepFocusedSensor();
             break;
-        case ButtonEvent::DOUBLE_CLICK:
-            Serial.printf("%d: Double Click\n", btnName);
+        case ButtonName::BUTTON1:
+            displayHandler.nextDisplayPage();
             break;
-        case ButtonEvent::LONG_PRESS:
-            if(btnName == ButtonName::BUTTON0) {
-              btnLed.toggle();
-            }
-            Serial.printf("%d: Long Press\n", btnName);
+        case ButtonName::BUTTON3:
+            currentState = AppState::SETTINGS_SCREEN;
             break;
-        case ButtonEvent::NONE:
-        default:
-            break; // Do nothing
+        }
+        Serial.printf("%d: Single Click\n", btnName);
+        break;
+    case ButtonEvent::DOUBLE_CLICK:
+        Serial.printf("%d: Double Click\n", btnName);
+        break;
+    case ButtonEvent::LONG_PRESS:
+        if (btnName == ButtonName::BUTTON0)
+        {
+            btnLed.toggle();
+        }
+        Serial.printf("%d: Long Press\n", btnName);
+        break;
+    case ButtonEvent::NONE:
+    default:
+        break; // Do nothing
     }
 }
 
-void loop() {
-    handleButtonEvent(ButtonName::BUTTON0, btn1.update());
-    handleButtonEvent(ButtonName::BUTTON1, btn2.update());
-    handleButtonEvent(ButtonName::BUTTON2, btn3.update());
-    handleButtonEvent(ButtonName::BUTTON3, btn4.update());
-    
-    // A tiny delay prevents the FreeRTOS watchdog timer from crashing 
-    // the core for hogging 100% of the CPU.
-    vTaskDelay(pdMS_TO_TICKS(5)); 
+void setup()
+{
+    Serial.begin(115200);
+    delay(1000); // Give serial a moment to wake up
+
+    Translator::setLanguage(0);
+
+    Serial.println("Init PINs and SPI");
+    pinMode(LIS3DH_CS, OUTPUT);
+    digitalWrite(LIS3DH_CS, HIGH);
+    pinMode(LCD_CS, OUTPUT);
+    digitalWrite(LCD_CS, HIGH);
+
+    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
+
+    Serial.println("Init Display");
+    displayHandler.init();
+    Serial.println("Init Accelerometer");
+    accelerometerHandler.init();
+    Serial.println("Init GPS");
+    gpsHandler.init();
+
+    // Initialize buttons
+    btn0.begin();
+    btn0.onDoubleClick([]()
+                       { handleButtonEvent(ButtonName::BUTTON0, ButtonEvent::DOUBLE_CLICK); });
+    btn0.onLongPress([]()
+                     { handleButtonEvent(ButtonName::BUTTON0, ButtonEvent::LONG_PRESS); });
+    btn0.onSingleClick([]()
+                       { handleButtonEvent(ButtonName::BUTTON0, ButtonEvent::SINGLE_CLICK); });
+    btn1.begin();
+    btn1.onDoubleClick([]()
+                       { handleButtonEvent(ButtonName::BUTTON1, ButtonEvent::DOUBLE_CLICK); });
+    btn1.onLongPress([]()
+                     { handleButtonEvent(ButtonName::BUTTON1, ButtonEvent::LONG_PRESS); });
+    btn1.onSingleClick([]()
+                       { handleButtonEvent(ButtonName::BUTTON1, ButtonEvent::SINGLE_CLICK); });
+    btn2.begin();
+    btn2.onDoubleClick([]()
+                       { handleButtonEvent(ButtonName::BUTTON2, ButtonEvent::DOUBLE_CLICK); });
+    btn2.onLongPress([]()
+                     { handleButtonEvent(ButtonName::BUTTON2, ButtonEvent::LONG_PRESS); });
+    btn2.onSingleClick([]()
+                       { handleButtonEvent(ButtonName::BUTTON2, ButtonEvent::SINGLE_CLICK); });
+    btn3.begin();
+    btn3.onDoubleClick([]()
+                       { handleButtonEvent(ButtonName::BUTTON3, ButtonEvent::DOUBLE_CLICK); });
+    btn3.onLongPress([]()
+                     { handleButtonEvent(ButtonName::BUTTON3, ButtonEvent::LONG_PRESS); });
+    btn3.onSingleClick([]()
+                       { handleButtonEvent(ButtonName::BUTTON3, ButtonEvent::SINGLE_CLICK); });
+    // 2. Launch the sensor task and pin it to Core 0
+    xTaskCreatePinnedToCore(
+        sensorDisplayTask, // The function we just wrote above
+        "SensorTask",      // A name for debugging
+        8192,              // Stack size (8KB is generous, good for displays/GPS)
+        NULL,              // Task input parameter (not needed here)
+        1,                 // Task priority (1 is standard)
+        &SensorTaskHandle, // Task handle
+        0                  // Pin this specific task to Core 0
+    );
+
+    xTaskCreatePinnedToCore(
+        globalButtonTask,    // Function to implement the task
+        "ButtonManager",     // Name of the task
+        2048,                // Stack size in words
+        NULL,                // Task input parameter
+        2,                   // Priority (Priority 2 > Priority 1 of SensorTask)
+        NULL,                // Task handle
+        1                    // Pin explicitly to Core 1
+    );
+
+    btnLed.begin();
+    btnLed.off();
+
+    Serial.println("Setup complete, resetting display.");
+}
+
+void loop()
+{
+
+    vTaskDelay(pdMS_TO_TICKS(5000));
 }
