@@ -1,4 +1,3 @@
-#pragma once
 #include "stringTranslator.hpp"
 #include <cassert>
 

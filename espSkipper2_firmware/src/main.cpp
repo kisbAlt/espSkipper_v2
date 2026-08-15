@@ -11,6 +11,7 @@
 #include "ledHandler.hpp"
 #include "settingsHandler.hpp"
 #include "settingsDisplay.hpp"
+#include "depthHandler.hpp"
 
 Settings settings{};
 
@@ -19,6 +20,7 @@ DisplayHandler displayHandler(instrumentDataModel, settings);
 AccelerometerHandler accelerometerHandler(instrumentDataModel);
 GpsHandler gpsHandler(instrumentDataModel);
 SettingsDisplay settingsDisplay(settings, displayHandler);
+DepthHandler depthHandler(settings, instrumentDataModel);
 
 ButtonHandler btn0(8);
 ButtonHandler btn1(17);
@@ -66,6 +68,7 @@ void sensorDisplayTask(void *pvParameters)
         displayHandler.updateDisplay();
         accelerometerHandler.readAccelerometerData();
         gpsHandler.updateGpsData();
+        depthHandler.ReadPacket();
         vTaskDelay(pdMS_TO_TICKS(settings.getValue<int>(SettingsKey::DisplayScreenUpdate)));
     }
 }
@@ -128,6 +131,7 @@ void setup()
     accelerometerHandler.init();
     Serial.println("Init GPS");
     gpsHandler.init();
+    depthHandler.begin();
 
     // Initialize buttons
     btn0.begin();

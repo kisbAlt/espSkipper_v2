@@ -24,13 +24,14 @@
     X(SettingDisplayTimeOnly, "Display Time Only", "Csak Ido Megjeleniese") \
     X(SettingDisplayUpdateTime, "Update screen every ms", "Kijelzo frissitese ms-enkent") \
     X(SensorTiltPitch, "Tilt Pitch", "Doles bolintas") \
-    X(SensorTiltPitchMin, "Tilt Pitch", "Bolint. Min") \
-    X(SensorTiltPitchMax, "Tilt Pitch", "Bolint. Max") \
-    X(SensorTiltPitchAvg, "Tilt Pitch", "Bolint Atl") \
+    X(SensorTiltPitchMin, "Pitch Min", "Bolint. Min") \
+    X(SensorTiltPitchMax, "Pitch Max", "Bolint. Max") \
+    X(SensorTiltPitchAvg, "Pitch Avg", "Bolint Atl") \
     X(SensorTiltRoll, "Tilt Roll", "Doles") \
-    X(SensorTiltRollMin, "Tilt Roll", "Doles Min") \
-    X(SensorTiltRollMax, "Tilt Roll", "Doles Max") \
-    X(SensorTiltRollAvg, "Tilt Roll", "Doles atl") \
+    X(SensorTiltRollMin, "Roll Min", "Doles Min") \
+    X(SensorTiltRollMax, "Roll Max", "Doles Max") \
+    X(SensorTiltRollAvg, "Roll Avg", "Doles atl") \
+    X(SensorDepth, "Water Depth", "Vízmélység") \
 
 // 2. Generate the Enum
 #define GENERATE_ENUM(KEY, EN, HU) KEY,
