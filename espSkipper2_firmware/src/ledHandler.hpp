@@ -22,6 +22,7 @@ public:
     
     // Must be called in the loop if using the blink feature
     void update();
+    void reload();
 
 private:
     uint8_t _pin;

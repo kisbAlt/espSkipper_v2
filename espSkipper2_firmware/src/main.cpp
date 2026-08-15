@@ -44,6 +44,12 @@ enum class AppState
     SETTINGS_SCREEN
 };
 AppState currentState = AppState::MAIN_SCREEN;
+void reloadAll() {
+    btnLed.reload();
+    gpsHandler.reload();
+    accelerometerHandler.reload();
+    instrumentDataModel.reload();
+}
 
 // 1. Define the task that will run on Core 0
 void sensorDisplayTask(void *pvParameters)
@@ -54,6 +60,7 @@ void sensorDisplayTask(void *pvParameters)
         if (currentState == AppState::SETTINGS_SCREEN)
         {
             settingsDisplay.drawSettingsUI();
+            reloadAll();
             currentState = AppState::MAIN_SCREEN;
         }
         displayHandler.updateDisplay();
@@ -67,7 +74,6 @@ void handleButtonEvent(const ButtonName btnName, const ButtonEvent event)
 {
     if (event != ButtonEvent::NONE && currentState == AppState::SETTINGS_SCREEN)
     {
-        Serial.printf("%d: Settings click\n", btnName);
         settingsDisplay.handleButtonPress(event, btnName);
         return;
     }
@@ -86,21 +92,18 @@ void handleButtonEvent(const ButtonName btnName, const ButtonEvent event)
             currentState = AppState::SETTINGS_SCREEN;
             break;
         }
-        Serial.printf("%d: Single Click\n", btnName);
         break;
     case ButtonEvent::DOUBLE_CLICK:
-        Serial.printf("%d: Double Click\n", btnName);
         break;
     case ButtonEvent::LONG_PRESS:
         if (btnName == ButtonName::BUTTON0)
         {
             btnLed.toggle();
         }
-        Serial.printf("%d: Long Press\n", btnName);
         break;
     case ButtonEvent::NONE:
     default:
-        break; // Do nothing
+        break;
     }
 }
 
@@ -108,8 +111,6 @@ void setup()
 {
     Serial.begin(115200);
     delay(1000); // Give serial a moment to wake up
-
-    Translator::setLanguage(0);
 
     Serial.println("Init PINs and SPI");
     pinMode(LIS3DH_CS, OUTPUT);

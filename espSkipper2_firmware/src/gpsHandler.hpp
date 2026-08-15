@@ -11,4 +11,5 @@ public:
     GpsHandler(InstrumentDataModel& dataModel);
     void init();
     void updateGpsData();
+    void reload();
 };

@@ -15,6 +15,7 @@ Settings::Settings()
     disableSensor(SensorId::DateTimeYear);
     disableSensor(SensorId::DateTimeMonth);
     disableSensor(SensorId::DateTimeDay);
+    Translator::setLanguage(1);
 }
 
 bool Settings::isSensorDisabled(SensorId id) const

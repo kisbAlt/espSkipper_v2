@@ -107,3 +107,7 @@ void GpsHandler::updateGpsData()
         // Serial.println("------------------------\n");
     }
 }
+
+void GpsHandler::reload()
+{
+}

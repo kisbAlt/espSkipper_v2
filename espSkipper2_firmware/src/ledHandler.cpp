@@ -20,21 +20,21 @@ void LedHandler::on()
 {
     _isBlinking = false;
     _isOn = true;
-    ledcWrite(_pwmChannel, _settings.getValue<uint8_t>(SettingsKey::BtnBrightness)); // Changed _pin to _pwmChannel
+    reload();
 }
 
 void LedHandler::off()
 {
     _isBlinking = false;
     _isOn = false;
-    ledcWrite(_pwmChannel, 0); // Changed _pin to _pwmChannel
+    reload();
 }
 
 void LedHandler::toggle()
 {
     _isBlinking = false;
     _isOn = !_isOn;
-    ledcWrite(_pwmChannel, _isOn ? _settings.getValue<uint8_t>(SettingsKey::BtnBrightness) : 0); // Changed _pin to _pwmChannel
+    reload();
 }
 
 void LedHandler::update()
@@ -47,7 +47,12 @@ void LedHandler::update()
             _lastBlinkTime = currentMillis;
 
             _isOn = !_isOn;
-            ledcWrite(_pwmChannel, _isOn ? _settings.getValue<uint8_t>(SettingsKey::BtnBrightness) : 0); // Changed _pin to _pwmChannel
+            reload();
         }
     }
+}
+
+void LedHandler::reload()
+{
+    ledcWrite(_pwmChannel, _isOn ? _settings.getValue<uint8_t>(SettingsKey::BtnBrightness) : 0);
 }

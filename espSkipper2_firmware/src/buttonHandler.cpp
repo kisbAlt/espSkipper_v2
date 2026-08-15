@@ -13,22 +13,22 @@ void ButtonHandler::begin() {
 void ButtonHandler::process() {
     unsigned long now = millis();
 
-    // 1. Shift current reading into history (active-low: 0 = pressed, 1 = released)
+    // 1. Shift current reading into history (active-low)
     _history = (_history << 1) | digitalRead(_pin);
 
-    // 2. Detect stable state transitions
-    // 0b11000000 -> Confirmed transition to Pressed (stable LOW for multiple samples)
-    if (!_isDown && (_history == 0xC0 || _history == 0x80 || _history == 0x00)) {
+    // 2. Detect stable state transitions using a BITMASK
+    // We only care about the newest 4 bits (4 samples * 5ms = 20ms debounce).
+    // 0x00 means the newest 4 readings were all LOW.
+    if (!_isDown && (_history & 0x0F) == 0x00) {
         _isDown = true;
         _pressStartTime = now;
         _longPressTriggered = false;
     }
-    // 0b00111111 -> Confirmed transition to Released (stable HIGH for multiple samples)
-    else if (_isDown && (_history == 0x3F || _history == 0x7F || _history == 0xFF)) {
+    // 0x0F (binary 00001111) means the newest 4 readings were all HIGH.
+    else if (_isDown && (_history & 0x0F) == 0x0F) {
         _isDown = false;
         _lastReleaseTime = now;
 
-        // Only count as a click if it wasn't already consumed by a long press
         if (!_longPressTriggered) {
             _clickCount++;
         }
@@ -43,7 +43,7 @@ void ButtonHandler::process() {
         }
     }
 
-    // 4. Handle Click Resolution (Single vs Double click after release timeout)
+    // 4. Handle Click Resolution
     if (!_isDown && _clickCount > 0) {
         if (now - _lastReleaseTime >= MULTI_CLICK_MS) {
             if (_clickCount == 1) {
@@ -60,4 +60,7 @@ void ButtonHandler::process() {
 
 void ButtonHandler::onDoubleClick(ButtonCallback cb) { _doubleClickCb = cb; }
 
-void ButtonHandler::onLongPress(ButtonCallback cb)   { _longPressCb = cb; } 
+void ButtonHandler::onLongPress(ButtonCallback cb)   { _longPressCb = cb; }
+void ButtonHandler::reload()
+{
+}

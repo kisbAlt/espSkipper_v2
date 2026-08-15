@@ -7,4 +7,5 @@ public:
     AccelerometerHandler(InstrumentDataModel& dataModel);
     void init();
     void readAccelerometerData();
+    void reload();
 };

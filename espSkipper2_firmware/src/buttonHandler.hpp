@@ -34,6 +34,7 @@ private:
     // Timing & State tracking
     unsigned long _pressStartTime;
     unsigned long _lastReleaseTime;
+    
     uint8_t _clickCount;
     bool _longPressTriggered;
 
@@ -52,6 +53,7 @@ public:
     void onSingleClick(ButtonCallback cb);
     void onDoubleClick(ButtonCallback cb);
     void onLongPress(ButtonCallback cb);
+    void reload();
 };
 
 #endif

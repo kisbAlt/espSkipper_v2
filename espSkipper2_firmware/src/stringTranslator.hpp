@@ -16,9 +16,17 @@
     X(DegreesLong,    "degrees",    "fok") \
     X(DegreesShort,   "deg",         "fok") \
     X(BlankUnit,      "",           "")  \
-    X(SettingBtnBrightness, "Button Brightness", "Gomb Fényerő") \
-    X(SettingDisplayDateTime, "Display Date and Time", "Dátum és Idő Megjelenítése") \
-    X(SettingDisplayTimeOnly, "Display Time Only", "Csak Idő Megjelenítése")
+    X(SettingBtnBrightness, "Button Brightness", "Gomb Fenyeros") \
+    X(SettingDisplayDateTime, "Display Date and Time", "Datum es Ido Megjeleniese") \
+    X(SettingDisplayTimeOnly, "Display Time Only", "Csak Ido Megjeleniese") \
+    X(SensorTiltPitch, "Tilt Pitch", "Doles bolintas") \
+    X(SensorTiltPitchMin, "Tilt Pitch", "Bolint. Min") \
+    X(SensorTiltPitchMax, "Tilt Pitch", "Bolint. Max") \
+    X(SensorTiltPitchAvg, "Tilt Pitch", "Bolint Atl") \
+    X(SensorTiltRoll, "Tilt Roll", "Doles") \
+    X(SensorTiltRollMin, "Tilt Roll", "Doles Min") \
+    X(SensorTiltRollMax, "Tilt Roll", "Doles Max") \
+    X(SensorTiltRollAvg, "Tilt Roll", "Doles atl") \
 
 // 2. Generate the Enum
 #define GENERATE_ENUM(KEY, EN, HU) KEY,

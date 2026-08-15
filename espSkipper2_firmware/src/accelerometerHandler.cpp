@@ -1,4 +1,5 @@
 #include "accelerometerHandler.hpp"
+#include "stringTranslator.hpp"
 #include <Arduino.h>
 #include "SparkFunLIS3DH.h"
 #include "Wire.h"
@@ -10,14 +11,14 @@ LIS3DH SensorOne(SPI_MODE, LIS3DH_CS);
 AccelerometerHandler::AccelerometerHandler(InstrumentDataModel& dataModel) : dataModel(dataModel)
 {
     SensorUnit degreeUnit = SensorUnit(SensorUnitEnum::Degrees);
-    dataModel.addSensor(SensorId::TiltPitch, 0, degreeUnit, (char*)"Tilt Pitch");
-    dataModel.addSensor(SensorId::TiltPitchMin, 0, degreeUnit, (char*)"Pitch Min");
-    dataModel.addSensor(SensorId::TiltPitchMax, 0, degreeUnit, (char*)"Pitch Max");
-    dataModel.addSensor(SensorId::TiltPitchAvg, 0, degreeUnit, (char*)"Pitch Avg", true);
-    dataModel.addSensor(SensorId::TiltRoll, 0, degreeUnit, (char*)"Tilt Roll");
-    dataModel.addSensor(SensorId::TiltRollMin, 0, degreeUnit, (char*)"Roll Min");
-    dataModel.addSensor(SensorId::TiltRollMax, 0, degreeUnit, (char*)"Roll Max");
-    dataModel.addSensor(SensorId::TiltRollAvg, 0, degreeUnit, (char*)"Roll Avg", true);
+    dataModel.addSensor(SensorId::TiltPitch, 0, degreeUnit, Translator::get(TextKey::SensorTiltPitch));
+    dataModel.addSensor(SensorId::TiltPitchMin, 0, degreeUnit, Translator::get(TextKey::SensorTiltPitchMin));
+    dataModel.addSensor(SensorId::TiltPitchMax, 0, degreeUnit, Translator::get(TextKey::SensorTiltPitchMax));
+    dataModel.addSensor(SensorId::TiltPitchAvg, 0, degreeUnit, Translator::get(TextKey::SensorTiltPitchAvg), true);
+    dataModel.addSensor(SensorId::TiltRoll, 0, degreeUnit, Translator::get(TextKey::SensorTiltRoll));
+    dataModel.addSensor(SensorId::TiltRollMin, 0, degreeUnit, Translator::get(TextKey::SensorTiltRollMin));
+    dataModel.addSensor(SensorId::TiltRollMax, 0, degreeUnit, Translator::get(TextKey::SensorTiltRollMax));
+    dataModel.addSensor(SensorId::TiltRollAvg, 0, degreeUnit, Translator::get(TextKey::SensorTiltRollAvg), true);
 }
 
 void AccelerometerHandler::init()
@@ -67,4 +68,8 @@ void AccelerometerHandler::readAccelerometerData()
     // Serial.println(lastPitch);
     // Serial.print(" lastRoll = ");
     // Serial.println(lastRoll);
+}
+
+void AccelerometerHandler::reload()
+{
 }

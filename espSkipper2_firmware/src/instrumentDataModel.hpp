@@ -15,7 +15,7 @@ private:
     {
         SensorId id;
         SensorValue value;
-        char *title;
+        const char *title;
         SensorUnit unit;
         bool isAverage = false;
         bool hasData = false;
@@ -35,13 +35,15 @@ public:
     void updateSensor(SensorId id, SensorValue val);
     void updateSensorIfLarger(SensorId id, SensorValue val);
     void updateSensorIfSmaller(SensorId id, SensorValue val);
-    void addSensor(SensorId id, SensorValue val, SensorUnit unit, char *title, bool isAverage = false);
+    void addSensor(SensorId id, SensorValue val, SensorUnit unit, const char *title, bool isAverage = false);
     bool isSensorEnabled(SensorId id) const;
     bool sensorHaveData(SensorId id) const;
     SensorValue getSensorValue(SensorId id) const;
     bool isSensorEnabledAndHaveData(SensorId id) const;
     std::vector<std::pair<SensorId, SensorValue>> getDisplaySnapshot() const;
     int getActiveSensorCount() const;
+    void reload();
+
     inline static int fast_round_positive(float x) {
         return static_cast<int>(x + 0.5f);
     }

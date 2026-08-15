@@ -75,7 +75,7 @@ DisplayHandler::DisplayHandler(InstrumentDataModel &dataModel, const Settings &s
 
 void DisplayHandler::init()
 {
-    lcd.begin(false);
+    lcd.begin(true);
     lcd.clear(COLOR_NEUTRAL);
     lcd.update();
 }
@@ -101,14 +101,24 @@ void DisplayHandler::DrawLayout()
 
         lcd.drawRect(149, 200, 1, 200, COLOR_BLACK); // Middle border (0 + 2 + 147)
 
-        char dateStr[32];
-        int hour = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeHour));
-        int minute = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeMinute));
-        int year = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeYear));
-        int month = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeMonth));
-        int day = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeDay));
-        snprintf(dateStr, sizeof(dateStr), "%04d.%02d.%02d %02d:%02d", year, month, day, hour, minute);
-        DisplayUtils::DrawTextCentered(lcd, 180, dateStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+        if (settings.getValue<bool>(SettingsKey::DisplayDateTime))
+        {
+            char dateStr[32];
+            int hour = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeHour));
+            int minute = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeMinute));
+            if (settings.getValue<bool>(SettingsKey::DisplayTimeOnly))
+            {
+                snprintf(dateStr, sizeof(dateStr), "%02d:%02d", hour, minute);
+            }
+            else
+            {
+                int year = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeYear));
+                int month = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeMonth));
+                int day = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeDay));
+                snprintf(dateStr, sizeof(dateStr), "%04d.%02d.%02d %02d:%02d", year, month, day, hour, minute);
+            }
+            DisplayUtils::DrawTextCentered(lcd, 180, dateStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+        }
 
         // Call the method and provide the display logic as the callback
         int lowerDataCount = 0;
@@ -171,7 +181,8 @@ void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
         char valueStr[32];
         Serial.println("drawSettingsPage2");
         // Pass the raw variant directly to std::visit
-        std::visit([&valueStr](const auto &arg) {
+        std::visit([&valueStr](const auto &arg)
+                   {
             using T = std::decay_t<decltype(arg)>;
 
             if constexpr (std::is_same_v<T, float>) {
@@ -182,8 +193,7 @@ void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
             } 
             else if constexpr (std::is_same_v<T, bool>) {
                 snprintf(valueStr, sizeof(valueStr), "%s", arg ? "On" : "Off");
-            }
-        }, settings.getValueVariant(i));
+            } }, settings.getValueVariant(i));
         Serial.println("drawSettingsPage3");
         const int y_pos = 40 + i * 30;
         if (status.isEditing && status.currentSettingIndex == i)
