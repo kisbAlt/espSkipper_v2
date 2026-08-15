@@ -101,7 +101,7 @@ void OsptekBWR::initRegs() {
     writeCmd(0x72); writeData(0x13);
     
     // Power Mode
-    writeCmd(_hpm_mode ? 0x38 : 0x39); 
+    writeCmd(0x39); 
     
     writeCmd(0x29); // Display On
 }

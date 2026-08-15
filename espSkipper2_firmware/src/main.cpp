@@ -66,7 +66,7 @@ void sensorDisplayTask(void *pvParameters)
         displayHandler.updateDisplay();
         accelerometerHandler.readAccelerometerData();
         gpsHandler.updateGpsData();
-        vTaskDelay(pdMS_TO_TICKS(500));
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
