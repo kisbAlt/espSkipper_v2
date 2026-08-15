@@ -67,6 +67,7 @@ void handleButtonEvent(const ButtonName btnName, const ButtonEvent event)
 {
     if (event != ButtonEvent::NONE && currentState == AppState::SETTINGS_SCREEN)
     {
+        Serial.printf("%d: Settings click\n", btnName);
         settingsDisplay.handleButtonPress(event, btnName);
         return;
     }

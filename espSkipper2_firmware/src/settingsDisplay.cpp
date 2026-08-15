@@ -58,6 +58,7 @@ bool SettingsDisplay::processButtonEvent(ButtonEvent btnEvent, ButtonName btnNam
 
                 break;
             case ButtonName::BUTTON3:
+                xSemaphoreGive(dataMutex);
                 return false;
                 break;
             }
@@ -79,29 +80,39 @@ bool SettingsDisplay::processButtonEvent(ButtonEvent btnEvent, ButtonName btnNam
 void SettingsDisplay::drawSettingsUI()
 {
     bool running = true;
-    // Force an initial draw when the screen first loads
-    displayHandler.DrawSettingsPage(status);
 
-    // Make sure the semaphore is empty before we start waiting
+    if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE)
+    {
+        lastButtonEvent = ButtonEvent::NONE;
+        lastButtonName = ButtonName::NONE;
+        xSemaphoreGive(dataMutex); 
+    }
+
+    Serial.println("drawSettingsUI1");
+    displayHandler.DrawSettingsPage(status);
     xQueueReset(wakeupSemaphore);
 
     while (running)
     {
-        ButtonEvent currButtonEvent;
-        ButtonName currButtonName;
+        ButtonEvent currButtonEvent = ButtonEvent::NONE;
+        ButtonName currButtonName = ButtonName::NONE;
 
         xSemaphoreTake(wakeupSemaphore, portMAX_DELAY);
-
-        // We woke up! Safely grab the button data.
         if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE)
         {
+            Serial.println("drawSettingsUI2");
             currButtonEvent = lastButtonEvent;
             currButtonName = lastButtonName;
+            lastButtonEvent = ButtonEvent::NONE;
+            lastButtonName = ButtonName::NONE;
             xSemaphoreGive(dataMutex);
         }
-
+        
         running = processButtonEvent(currButtonEvent, currButtonName);
 
-        displayHandler.DrawSettingsPage(status);
+        if (running) 
+        {
+            displayHandler.DrawSettingsPage(status);
+        }
     }
 }

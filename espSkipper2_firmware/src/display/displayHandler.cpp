@@ -159,6 +159,7 @@ void DisplayHandler::DrawLayout()
 
 void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
 {
+    Serial.println("drawSettingsPage1");
     lastUpdate = millis();
     lcd.clear(COLOR_NEUTRAL);
 
@@ -168,7 +169,7 @@ void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
         const SettingDef &setting = settings.getSettingDef(i);
         const char *settingName = setting.GetString();
         char valueStr[32];
-
+        Serial.println("drawSettingsPage2");
         // Pass the raw variant directly to std::visit
         std::visit([&valueStr](const auto &arg) {
             using T = std::decay_t<decltype(arg)>;
@@ -183,7 +184,7 @@ void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
                 snprintf(valueStr, sizeof(valueStr), "%s", arg ? "On" : "Off");
             }
         }, settings.getValueVariant(i));
-
+        Serial.println("drawSettingsPage3");
         const int y_pos = 40 + i * 30;
         if (status.isEditing && status.currentSettingIndex == i)
         {
@@ -204,6 +205,7 @@ void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
 
     lcd.update();
     updateCounter++;
+    Serial.println("drawSettingsPage5");
 }
 
 void DisplayHandler::ResetDisplay()

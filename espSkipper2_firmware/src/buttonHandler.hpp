@@ -14,6 +14,7 @@ enum class ButtonEvent
 
 enum class ButtonName
 {
+    NONE,
     BUTTON0,
     BUTTON1,
     BUTTON2,
