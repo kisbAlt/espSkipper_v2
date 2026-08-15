@@ -3,10 +3,11 @@
 
 Settings::Settings()
 {
-    for (std::size_t i = 0; i < Count; ++i)
-    {
-        currentValues[i] = Schema[i].defaultValue;
-    }
+}
+
+void Settings::begin()
+{
+    loadFromNVS();
     disableSensor(SensorId::MinGpsSpeed);
     disableSensor(SensorId::TiltPitchAvg);
     disableSensor(SensorId::TiltRollAvg);
@@ -39,7 +40,7 @@ const SettingDef &Settings::getSettingDef(size_t index) const
 void Settings::setNextValue(size_t index)
 {
     const OptionList& opts = Schema[index].options;
-
+    SettingsKey key = Schema[index].key;
     if (opts.count == 0) return;
 
     std::size_t currentOptionIdx = 0;
@@ -52,12 +53,13 @@ void Settings::setNextValue(size_t index)
 
     std::size_t nextIdx = (currentOptionIdx + 1) % opts.count;
     currentValues[index] = opts.items[nextIdx];
+    saveToNVS(key, currentValues[index]);
 }
 
 void Settings::setPreviousValue(size_t index)
 {
     const OptionList& opts = Schema[index].options;
-
+    SettingsKey key = Schema[index].key;
     if (opts.count == 0) return;
 
     std::size_t currentOptionIdx = 0;
@@ -70,7 +72,7 @@ void Settings::setPreviousValue(size_t index)
 
     std::size_t prevIdx = (currentOptionIdx == 0) ? (opts.count - 1) : (currentOptionIdx - 1);
     currentValues[index] = opts.items[prevIdx];
-    return;
+    saveToNVS(key, currentValues[index]);
 }
 
 void Settings::disableSensor(SensorId id)

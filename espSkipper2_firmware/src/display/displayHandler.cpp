@@ -192,7 +192,7 @@ void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
                 snprintf(valueStr, sizeof(valueStr), "%d", static_cast<int>(arg));
             } 
             else if constexpr (std::is_same_v<T, bool>) {
-                snprintf(valueStr, sizeof(valueStr), "%s", arg ? "On" : "Off");
+                snprintf(valueStr, sizeof(valueStr), "%s", arg ? Translator::get(TextKey::SettingOn) : Translator::get(TextKey::SettingOff));
             } }, settings.getValueVariant(i));
         Serial.println("drawSettingsPage3");
         const int y_pos = 40 + i * 30;

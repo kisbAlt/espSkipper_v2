@@ -16,9 +16,13 @@
     X(DegreesLong,    "degrees",    "fok") \
     X(DegreesShort,   "deg",         "fok") \
     X(BlankUnit,      "",           "")  \
+    X(SettingOn, "On", "Be") \
+    X(SettingOff, "Off", "Ki") \
     X(SettingBtnBrightness, "Button Brightness", "Gomb Fenyeros") \
+    X(SettingBtnLedEnabled, "Button LED On", "Gomb Led be") \
     X(SettingDisplayDateTime, "Display Date and Time", "Datum es Ido Megjeleniese") \
     X(SettingDisplayTimeOnly, "Display Time Only", "Csak Ido Megjeleniese") \
+    X(SettingDisplayUpdateTime, "Update screen every ms", "Kijelzo frissitese ms-enkent") \
     X(SensorTiltPitch, "Tilt Pitch", "Doles bolintas") \
     X(SensorTiltPitchMin, "Tilt Pitch", "Bolint. Min") \
     X(SensorTiltPitchMax, "Tilt Pitch", "Bolint. Max") \

@@ -12,7 +12,7 @@
 #include "settingsHandler.hpp"
 #include "settingsDisplay.hpp"
 
-Settings settings;
+Settings settings{};
 
 InstrumentDataModel instrumentDataModel(settings);
 DisplayHandler displayHandler(instrumentDataModel, settings);
@@ -66,7 +66,7 @@ void sensorDisplayTask(void *pvParameters)
         displayHandler.updateDisplay();
         accelerometerHandler.readAccelerometerData();
         gpsHandler.updateGpsData();
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(settings.getValue<int>(SettingsKey::DisplayScreenUpdate)));
     }
 }
 
@@ -98,7 +98,8 @@ void handleButtonEvent(const ButtonName btnName, const ButtonEvent event)
     case ButtonEvent::LONG_PRESS:
         if (btnName == ButtonName::BUTTON0)
         {
-            btnLed.toggle();
+            settings.setValue(SettingsKey::BtnLedEnabled, !settings.getValue<bool>(SettingsKey::BtnLedEnabled));
+            btnLed.reload();
         }
         break;
     case ButtonEvent::NONE:
@@ -111,6 +112,7 @@ void setup()
 {
     Serial.begin(115200);
     delay(1000); // Give serial a moment to wake up
+    settings.begin();
 
     Serial.println("Init PINs and SPI");
     pinMode(LIS3DH_CS, OUTPUT);
@@ -178,7 +180,6 @@ void setup()
     );
 
     btnLed.begin();
-    btnLed.off();
 
     Serial.println("Setup complete, resetting display.");
 }

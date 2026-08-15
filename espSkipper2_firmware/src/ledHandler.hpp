@@ -12,11 +12,6 @@ public:
     // Initializes the pin
     void begin();
     
-    // Direct control methods
-    void on();
-    void off();
-    void toggle();
-    
     // Non-blocking blink functionality
     void blink(uint32_t intervalMillis);
     
@@ -27,7 +22,6 @@ public:
 private:
     uint8_t _pin;
     uint8_t _pwmChannel;
-    bool _isOn;
     bool _isBlinking;
     uint32_t _blinkInterval;
     unsigned long _lastBlinkTime;
