@@ -18,8 +18,10 @@
     X(BlankUnit,      "",           "")  \
     X(SettingOn, "On", "Be") \
     X(SettingOff, "Off", "Ki") \
-    X(SettingBtnBrightness, "Button Brightness", "Gomb Fenyeros") \
+    X(SettingBtnBrightness, "Button Brightness", "Gomb Fenyero") \
     X(SettingBtnLedEnabled, "Button LED On", "Gomb Led be") \
+    X(SettingLCDBrightness, "LCD Brightness", "LCD Fenyero") \
+    X(SettingLCDLedEnabled, "LCD LED On", "LCD Led be") \
     X(SettingDisplayDateTime, "Display Date and Time", "Datum es Ido Megjeleniese") \
     X(SettingDisplayTimeOnly, "Display Time Only", "Csak Ido Megjeleniese") \
     X(SettingDisplayUpdateTime, "Update screen every ms", "Kijelzo frissitese ms-enkent") \

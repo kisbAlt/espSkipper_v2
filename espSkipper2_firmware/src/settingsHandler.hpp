@@ -13,6 +13,8 @@ enum class SettingsKey
 {
     BtnBrightness,
     BtnLedEnabled,
+    LCDBrightness,
+    LCDLedEnabled,
     DisplayDateTime,
     DisplayTimeOnly,
     DisplayScreenUpdate,
@@ -90,7 +92,7 @@ public:
     void setPreviousValue(size_t index);
 
 private:
-    static constexpr std::size_t Count = 5;
+    static constexpr std::size_t Count = 7;
 
     static constexpr SettingDef Schema[Count] = {
         {SettingsKey::BtnBrightness,
@@ -100,6 +102,14 @@ private:
         {SettingsKey::BtnLedEnabled,
          bool(false),
          TextKey::SettingBtnLedEnabled,
+         OptionList(bool(true), bool(false))},
+        {SettingsKey::LCDBrightness,
+         uint8_t(255),
+         TextKey::SettingLCDBrightness,
+         OptionList(uint8_t(5), uint8_t(40), uint8_t(80), uint8_t(120), uint8_t(255))},
+        {SettingsKey::LCDLedEnabled,
+         bool(false),
+         TextKey::SettingLCDLedEnabled,
          OptionList(bool(true), bool(false))},
         {SettingsKey::DisplayDateTime,
          bool(true),

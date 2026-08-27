@@ -38,7 +38,8 @@ void globalButtonTask(void* arg) {
 
 TaskHandle_t SensorTaskHandle;
 
-LedHandler btnLed(3, settings);
+LedHandler btnLed(3, []() { return settings.getValue<bool>(SettingsKey::BtnLedEnabled); }, []() { return settings.getValue<uint8_t>(SettingsKey::BtnBrightness); }, 0);
+LedHandler lcdLed(18, []() { return settings.getValue<bool>(SettingsKey::LCDLedEnabled); }, []() { return settings.getValue<uint8_t>(SettingsKey::LCDBrightness); }, 1);
 
 enum class AppState
 {
@@ -48,6 +49,7 @@ enum class AppState
 AppState currentState = AppState::MAIN_SCREEN;
 void reloadAll() {
     btnLed.reload();
+    lcdLed.reload();
     gpsHandler.reload();
     accelerometerHandler.reload();
     instrumentDataModel.reload();
@@ -101,8 +103,11 @@ void handleButtonEvent(const ButtonName btnName, const ButtonEvent event)
     case ButtonEvent::LONG_PRESS:
         if (btnName == ButtonName::BUTTON0)
         {
-            settings.setValue(SettingsKey::BtnLedEnabled, !settings.getValue<bool>(SettingsKey::BtnLedEnabled));
+            const bool newValue = !settings.getValue<bool>(SettingsKey::LCDLedEnabled);
+            settings.setValue(SettingsKey::BtnLedEnabled, newValue);
+            settings.setValue(SettingsKey::LCDLedEnabled, newValue);
             btnLed.reload();
+            lcdLed.reload();
         }
         break;
     case ButtonEvent::NONE:
@@ -184,6 +189,7 @@ void setup()
     );
 
     btnLed.begin();
+    lcdLed.begin();
 
     Serial.println("Setup complete, resetting display.");
 }
