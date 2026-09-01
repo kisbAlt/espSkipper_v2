@@ -35,6 +35,7 @@ enum class SensorId : size_t
 enum class SensorUnitEnum
 {
     Kmph,
+    Mps,
     Kilometer,
     Meter,
     Knots,

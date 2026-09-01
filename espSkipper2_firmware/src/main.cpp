@@ -12,6 +12,7 @@
 #include "settingsHandler.hpp"
 #include "settingsDisplay.hpp"
 #include "depthHandler.hpp"
+#include "windHandler.hpp"
 
 Settings settings{};
 
@@ -21,6 +22,7 @@ AccelerometerHandler accelerometerHandler(instrumentDataModel);
 GpsHandler gpsHandler(instrumentDataModel);
 SettingsDisplay settingsDisplay(settings, displayHandler);
 DepthHandler depthHandler(settings, instrumentDataModel);
+WindHandler windHandler(instrumentDataModel);
 
 ButtonHandler btn0(8);
 ButtonHandler btn1(17);
@@ -53,6 +55,7 @@ void reloadAll() {
     gpsHandler.reload();
     accelerometerHandler.reload();
     instrumentDataModel.reload();
+    windHandler.reload();
 }
 
 // 1. Define the task that will run on Core 0
@@ -71,6 +74,7 @@ void sensorDisplayTask(void *pvParameters)
         accelerometerHandler.readAccelerometerData();
         gpsHandler.updateGpsData();
         depthHandler.ReadPacket();
+        windHandler.updateWindData();
         vTaskDelay(pdMS_TO_TICKS(settings.getValue<int>(SettingsKey::DisplayScreenUpdate)));
     }
 }
@@ -137,6 +141,7 @@ void setup()
     Serial.println("Init GPS");
     gpsHandler.init();
     depthHandler.begin();
+    windHandler.init();
 
     // Initialize buttons
     btn0.begin();

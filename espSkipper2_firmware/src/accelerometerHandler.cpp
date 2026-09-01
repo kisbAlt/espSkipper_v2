@@ -11,14 +11,14 @@ LIS3DH SensorOne(SPI_MODE, LIS3DH_CS);
 AccelerometerHandler::AccelerometerHandler(InstrumentDataModel& dataModel) : dataModel(dataModel)
 {
     SensorUnit degreeUnit = SensorUnit(SensorUnitEnum::Degrees);
-    dataModel.addSensor(SensorId::TiltPitch, 0, degreeUnit, Translator::get(TextKey::SensorTiltPitch));
-    dataModel.addSensor(SensorId::TiltPitchMin, 0, degreeUnit, Translator::get(TextKey::SensorTiltPitchMin));
-    dataModel.addSensor(SensorId::TiltPitchMax, 0, degreeUnit, Translator::get(TextKey::SensorTiltPitchMax));
-    dataModel.addSensor(SensorId::TiltPitchAvg, 0, degreeUnit, Translator::get(TextKey::SensorTiltPitchAvg), true);
-    dataModel.addSensor(SensorId::TiltRoll, 0, degreeUnit, Translator::get(TextKey::SensorTiltRoll));
-    dataModel.addSensor(SensorId::TiltRollMin, 0, degreeUnit, Translator::get(TextKey::SensorTiltRollMin));
-    dataModel.addSensor(SensorId::TiltRollMax, 0, degreeUnit, Translator::get(TextKey::SensorTiltRollMax));
-    dataModel.addSensor(SensorId::TiltRollAvg, 0, degreeUnit, Translator::get(TextKey::SensorTiltRollAvg), true);
+    dataModel.addSensor(SensorId::TiltPitch, 0, degreeUnit, TextKey::SensorTiltPitch);
+    dataModel.addSensor(SensorId::TiltPitchMin, 0, degreeUnit, TextKey::SensorTiltPitchMin);
+    dataModel.addSensor(SensorId::TiltPitchMax, 0, degreeUnit, TextKey::SensorTiltPitchMax);
+    dataModel.addSensor(SensorId::TiltPitchAvg, 0, degreeUnit, TextKey::SensorTiltPitchAvg, true);
+    dataModel.addSensor(SensorId::TiltRoll, 0, degreeUnit, TextKey::SensorTiltRoll);
+    dataModel.addSensor(SensorId::TiltRollMin, 0, degreeUnit, TextKey::SensorTiltRollMin);
+    dataModel.addSensor(SensorId::TiltRollMax, 0, degreeUnit, TextKey::SensorTiltRollMax);
+    dataModel.addSensor(SensorId::TiltRollAvg, 0, degreeUnit, TextKey::SensorTiltRollAvg, true);
 }
 
 void AccelerometerHandler::init()

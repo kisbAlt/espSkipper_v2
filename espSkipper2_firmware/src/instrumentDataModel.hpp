@@ -7,6 +7,7 @@
 
 #include "instrumentDataFormats.hpp"
 #include "settingsHandler.hpp"
+#include "stringTranslator.hpp"
 
 class InstrumentDataModel
 {
@@ -15,7 +16,7 @@ private:
     {
         SensorId id;
         SensorValue value;
-        const char *title;
+        TextKey titleKey;
         SensorUnit unit;
         bool isAverage = false;
         bool hasData = false;
@@ -35,7 +36,7 @@ public:
     void updateSensor(SensorId id, SensorValue val);
     void updateSensorIfLarger(SensorId id, SensorValue val);
     void updateSensorIfSmaller(SensorId id, SensorValue val);
-    void addSensor(SensorId id, SensorValue val, SensorUnit unit, const char *title, bool isAverage = false);
+    void addSensor(SensorId id, SensorValue val, SensorUnit unit, TextKey titleKey, bool isAverage = false);
     bool isSensorEnabled(SensorId id) const;
     bool sensorHaveData(SensorId id) const;
     SensorValue getSensorValue(SensorId id) const;
@@ -60,7 +61,7 @@ public:
                 std::lock_guard<std::mutex> lock(m_mutex);
                 std::visit([](const auto& arg) {
                 }, m_data[i].value);
-                cb(displayIndex, m_data[i].title, m_data[i].value, m_data[i].unit, m_data[i].id);
+                cb(displayIndex, m_data[i].titleKey, m_data[i].value, m_data[i].unit, m_data[i].id);
                 displayIndex++;
             }
         }

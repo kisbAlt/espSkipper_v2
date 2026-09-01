@@ -122,7 +122,7 @@ void DisplayHandler::DrawLayout()
 
         // Call the method and provide the display logic as the callback
         int lowerDataCount = 0;
-        dataModel.drawActiveSensors([&](int index, const char *title, SensorValue value, SensorUnit unit, SensorId id)
+        dataModel.drawActiveSensors([&](int index, const TextKey titleKey, SensorValue value, SensorUnit unit, SensorId id)
                                     {
                                         const char *unitText = unit.GetString();
                                         int valueLen = strlen(unitText);
@@ -134,7 +134,7 @@ void DisplayHandler::DrawLayout()
                                             const int side_margin = 10;
                                             DisplayUtils::DrawTextCentered(lcd, -10, valueStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::SimplyMono_Bold50pt7b, 1);
                                             DisplayUtils::DrawText(lcd, DISPLAY_WIDTH - (valueLen * 12 + side_margin), top_margin, unitText, COLOR_RED, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
-                                            DisplayUtils::DrawText(lcd, side_margin, top_margin, title, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+                                            DisplayUtils::DrawText(lcd, side_margin, top_margin, Translator::get(titleKey), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
                                         }
                                         else
                                         {
@@ -150,7 +150,7 @@ void DisplayHandler::DrawLayout()
                                             int cellX = (col * 149) + 5;
                                             int cellY = 200 + (row * 66) + 5;
 
-                                            DisplayUtils::DrawText(lcd, cellX, cellY, title, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
+                                            DisplayUtils::DrawText(lcd, cellX, cellY, Translator::get(titleKey), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
 
                                             DisplayUtils::DrawText(lcd, cellX+10, cellY + 38, valueStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 2);
 

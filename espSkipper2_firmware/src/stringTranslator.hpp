@@ -3,6 +3,7 @@
 // 1. Define the Master Table
 #define TRANSLATION_TABLE(X) \
     X(Kmph,           "km/h",       "km/h") \
+    X(Mps,            "m/s",        "m/s") \
     X(KilometerShort, "km",         "km") \
     X(KilometerLong,  "kilometers", "kilometer") \
     X(MeterLong,      "meters",     "meter") \
@@ -33,7 +34,21 @@
     X(SensorTiltRollMin, "Roll Min", "Doles Min") \
     X(SensorTiltRollMax, "Roll Max", "Doles Max") \
     X(SensorTiltRollAvg, "Roll Avg", "Doles atl") \
-    X(SensorDepth, "Water Depth", "Vízmélység") \
+    X(SensorDepth, "Water Depth", "Vizmelyseg") \
+    X(SensorWindDirection, "Wind Direction", "Szelirany") \
+    X(SensorWindSpeed, "Wind Speed", "Szelsebesseg") \
+    X(SensorGpsSpeed, "GPS Speed", "GPS Sebesseg") \
+    X(SensorSatelliteCount, "Satellite Count", "Muholdak") \
+    X(SensorMinGpsSpeed, "GPS Speed Min", "GPS Sebesseg Min") \
+    X(SensorMaxGpsSpeed, "GPS Speed Max", "GPS Sebesseg Max") \
+    X(SensorAvgGpsSpeed, "GPS Speed Avg", "GPS Sebesseg Atl") \
+    X(SensorGpsCourse, "GPS Course", "GPS Irany") \
+    X(SensorDateTimeHour, "Hour", "Ora") \
+    X(SensorDateTimeMinute, "Minute", "Perc") \
+    X(SensorDateTimeSecond, "Second", "Masodperc") \
+    X(SensorDateTimeDay, "Day", "Nap") \
+    X(SensorDateTimeMonth, "Month", "Honap") \
+    X(SensorDateTimeYear, "Year", "Ev") \
 
 // 2. Generate the Enum
 #define GENERATE_ENUM(KEY, EN, HU) KEY,

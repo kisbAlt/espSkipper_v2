@@ -26,7 +26,7 @@ void DepthHandler::begin()
 DepthHandler::DepthHandler(const Settings &settings, InstrumentDataModel &dataModel)
     : settings(settings), dataModel(dataModel)
 {
-    dataModel.addSensor(SensorId::WaterDepth, (float)0.0f, SensorUnitEnum::Meter, Translator::get(TextKey::SensorDepth));
+    dataModel.addSensor(SensorId::WaterDepth, (float)0.0f, SensorUnitEnum::Meter, TextKey::SensorDepth);
 }
 
 bool DepthHandler::ReadPacket()

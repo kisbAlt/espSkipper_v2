@@ -41,10 +41,10 @@ void InstrumentDataModel::updateSensorIfSmaller(SensorId id, SensorValue val)
     }, m_data[static_cast<size_t>(id)].value);
 }
 
-void InstrumentDataModel::addSensor(SensorId id, SensorValue val, SensorUnit unit, const char *title, bool isAverage)
+void InstrumentDataModel::addSensor(SensorId id, SensorValue val, SensorUnit unit, TextKey titleKey, bool isAverage)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_data[static_cast<size_t>(id)] = {id, val, title, unit, isAverage};
+    m_data[static_cast<size_t>(id)] = {id, val, titleKey, unit, isAverage};
     count++;
 }
 
@@ -117,6 +117,8 @@ const char *SensorUnit::GetString()
     {
     case SensorUnitEnum::Kmph:
         return Translator::get(TextKey::Kmph);
+    case SensorUnitEnum::Mps:
+        return Translator::get(TextKey::Mps);
     case SensorUnitEnum::Kilometer:
         return Translator::get(TextKey::KilometerShort);
     case SensorUnitEnum::Meter:

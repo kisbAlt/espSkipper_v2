@@ -8,18 +8,18 @@ HardwareSerial gpsSerial(1); // Using UART1
 
 GpsHandler::GpsHandler(InstrumentDataModel& dataModel) : dataModel(dataModel)
 {
-    dataModel.addSensor(SensorId::GpsSpeed, 0.0f, SensorUnit(SensorUnitEnum::Kmph), (char*)"GPS Speed");
-    dataModel.addSensor(SensorId::SatelliteCount, 0.0f, SensorUnit(SensorUnitEnum::BlankUnit), (char*)"Satellites");
-    dataModel.addSensor(SensorId::MinGpsSpeed, 0.0f, SensorUnit(SensorUnitEnum::Kmph), (char*)"Speed Min.");
-    dataModel.addSensor(SensorId::MaxGpsSpeed, 0.0f, SensorUnit(SensorUnitEnum::Kmph), (char*)"Speed Max.");
-    dataModel.addSensor(SensorId::AvgGpsSpeed, 0.0f, SensorUnit(SensorUnitEnum::Kmph), (char*)"Speed Avg.", true);
-    dataModel.addSensor(SensorId::GpsCourse, SensorValueString{}, SensorUnit(SensorUnitEnum::Degrees), (char*)"Course");
-    dataModel.addSensor(SensorId::DateTimeHour, 0, SensorUnit(SensorUnitEnum::BlankUnit), (char*)"Hour");
-    dataModel.addSensor(SensorId::DateTimeMinute, 0, SensorUnit(SensorUnitEnum::BlankUnit), (char*)"Minute");
-    dataModel.addSensor(SensorId::DateTimeSecond, 0, SensorUnit(SensorUnitEnum::BlankUnit), (char*)"Second");
-    dataModel.addSensor(SensorId::DateTimeDay, 0, SensorUnit(SensorUnitEnum::BlankUnit), (char*)"Day");
-    dataModel.addSensor(SensorId::DateTimeMonth, 0, SensorUnit(SensorUnitEnum::BlankUnit), (char*)"Month");
-    dataModel.addSensor(SensorId::DateTimeYear, 0, SensorUnit(SensorUnitEnum::BlankUnit), (char*)"Year");
+    dataModel.addSensor(SensorId::GpsSpeed, 0.0f, SensorUnit(SensorUnitEnum::Kmph), TextKey::SensorGpsSpeed);
+    dataModel.addSensor(SensorId::SatelliteCount, 0.0f, SensorUnit(SensorUnitEnum::BlankUnit), TextKey::SensorSatelliteCount);
+    dataModel.addSensor(SensorId::MinGpsSpeed, 0.0f, SensorUnit(SensorUnitEnum::Kmph), TextKey::SensorMinGpsSpeed);
+    dataModel.addSensor(SensorId::MaxGpsSpeed, 0.0f, SensorUnit(SensorUnitEnum::Kmph), TextKey::SensorMaxGpsSpeed);
+    dataModel.addSensor(SensorId::AvgGpsSpeed, 0.0f, SensorUnit(SensorUnitEnum::Kmph), TextKey::SensorAvgGpsSpeed, true);
+    dataModel.addSensor(SensorId::GpsCourse, SensorValueString{}, SensorUnit(SensorUnitEnum::Degrees), TextKey::SensorGpsCourse);
+    dataModel.addSensor(SensorId::DateTimeHour, 0, SensorUnit(SensorUnitEnum::BlankUnit), TextKey::SensorDateTimeHour);
+    dataModel.addSensor(SensorId::DateTimeMinute, 0, SensorUnit(SensorUnitEnum::BlankUnit), TextKey::SensorDateTimeMinute);
+    dataModel.addSensor(SensorId::DateTimeSecond, 0, SensorUnit(SensorUnitEnum::BlankUnit), TextKey::SensorDateTimeSecond);
+    dataModel.addSensor(SensorId::DateTimeDay, 0, SensorUnit(SensorUnitEnum::BlankUnit), TextKey::SensorDateTimeDay);
+    dataModel.addSensor(SensorId::DateTimeMonth, 0, SensorUnit(SensorUnitEnum::BlankUnit), TextKey::SensorDateTimeMonth);
+    dataModel.addSensor(SensorId::DateTimeYear, 0, SensorUnit(SensorUnitEnum::BlankUnit), TextKey::SensorDateTimeYear);
 }
 
 void GpsHandler::init()
