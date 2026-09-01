@@ -23,15 +23,15 @@ private:
         int dataCount = 0;
 
         void UpdateValue(SensorValue newValue);
+        SensorValue GetValueInUnit(SensorUnitEnum targetUnitEnum) const;
     };
 
     std::array<SensorRecord, static_cast<size_t>(SensorId::MAX_SENSORS)> m_data;
     mutable std::mutex m_mutex;
-    const Settings& m_settings;
-    
+    const Settings &m_settings;
 
 public:
-    InstrumentDataModel(const Settings& settings);
+    InstrumentDataModel(const Settings &settings);
     int count = 0;
     void updateSensor(SensorId id, SensorValue val);
     void updateSensorIfLarger(SensorId id, SensorValue val);
@@ -45,7 +45,8 @@ public:
     int getActiveSensorCount() const;
     void reload();
 
-    inline static int fast_round_positive(float x) {
+    inline static int fast_round_positive(float x)
+    {
         return static_cast<int>(x + 0.5f);
     }
 
@@ -59,9 +60,20 @@ public:
             if (isSensorEnabledAndHaveData(static_cast<SensorId>(i)))
             {
                 std::lock_guard<std::mutex> lock(m_mutex);
-                std::visit([](const auto& arg) {
-                }, m_data[i].value);
-                cb(displayIndex, m_data[i].titleKey, m_data[i].value, m_data[i].unit, m_data[i].id);
+                std::visit([](const auto &arg) {}, m_data[i].value);
+                SensorUnitEnum settingsUnit;
+                switch (m_data[i].unit.GetUnitType())
+                {
+                case UnitType::Speed:
+                    settingsUnit = static_cast<SensorUnitEnum>(m_settings.getValue<uint8_t>(SettingsKey::SpeedUnit));
+                    break;
+                case UnitType::Distance:
+                    settingsUnit = static_cast<SensorUnitEnum>(m_settings.getValue<uint8_t>(SettingsKey::DistanceUnit));
+                    break;
+                default:
+                    settingsUnit = m_data[i].unit.GetUnitEnum();
+                }
+                cb(displayIndex, m_data[i].titleKey, m_data[i].GetValueInUnit(settingsUnit), GetUnitString(settingsUnit), m_data[i].id);
                 displayIndex++;
             }
         }

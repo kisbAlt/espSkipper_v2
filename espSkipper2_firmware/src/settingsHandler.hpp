@@ -18,12 +18,17 @@ enum class SettingsKey
     DisplayDateTime,
     DisplayTimeOnly,
     DisplayScreenUpdate,
+    SpeedUnit,
+    DistanceUnit,
+    TemperatureUnit,
+    Language
 };
-using SettingValue = std::variant<bool, int, float, uint8_t>;
+using SettingValue = std::variant<bool, int, float, uint8_t, TextKey>;
+#define OPTION_COUNT 8
 
 struct OptionList
 {
-    SettingValue items[8];
+    SettingValue items[OPTION_COUNT];
     std::size_t count;
     template <typename... Args>
     constexpr OptionList(Args... args) : items{args...}, count(sizeof...(args)) {}
@@ -36,8 +41,11 @@ struct SettingDef
     SettingValue defaultValue;
     TextKey displayName;
     OptionList options;
+    TextKey optionTexts[OPTION_COUNT];
+    bool useOptionsText = false;
 
-    const char *GetString() const;
+    const char *GetTitleString() const;
+    void GetOptionString(const SettingValue& currentValue, char *buffer, std::size_t bufferSize) const;
 };
 
 class Settings
@@ -92,7 +100,7 @@ public:
     void setPreviousValue(size_t index);
 
 private:
-    static constexpr std::size_t Count = 7;
+    static constexpr std::size_t Count = 10;
 
     static constexpr SettingDef Schema[Count] = {
         {SettingsKey::BtnBrightness,
@@ -122,7 +130,19 @@ private:
         {SettingsKey::DisplayScreenUpdate,
          int(500),
          TextKey::SettingDisplayUpdateTime,
-         OptionList((int)62, (int)100, (int)200, (int)300, (int)400, (int)500, (int)1000, (int)2000)}
+         OptionList((int)62, (int)100, (int)200, (int)300, (int)400, (int)500, (int)1000, (int)2000)},
+        {SettingsKey::SpeedUnit,
+         (uint8_t)SensorUnitEnum::Kmph,
+         TextKey::SettingSpeedUnit,
+         OptionList((uint8_t)SensorUnitEnum::Kmph, (uint8_t)SensorUnitEnum::Mps, (uint8_t)SensorUnitEnum::Knots), {TextKey::Kmph, TextKey::Mps, TextKey::KnotsShort}, true},
+        {SettingsKey::DistanceUnit,
+         (uint8_t)SensorUnitEnum::Kilometer,
+         TextKey::SettingDistanceUnit,
+         OptionList((uint8_t)SensorUnitEnum::Kilometer, (uint8_t)SensorUnitEnum::Meter), {TextKey::KilometerShort, TextKey::MeterShort}, true},
+        {SettingsKey::Language,
+         (uint8_t)0,
+         TextKey::SettingDistanceUnit,
+         OptionList((uint8_t)0, (uint8_t)1), {TextKey::LanguageEnglishShort, TextKey::LanguageHungarianShort}, true}
 
     };
     SettingValue currentValues[Count];

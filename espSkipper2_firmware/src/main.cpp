@@ -56,6 +56,7 @@ void reloadAll() {
     accelerometerHandler.reload();
     instrumentDataModel.reload();
     windHandler.reload();
+    Translator::setLanguage(settings.getValue<uint8_t>(SettingsKey::Language));
 }
 
 // 1. Define the task that will run on Core 0

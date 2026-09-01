@@ -122,9 +122,8 @@ void DisplayHandler::DrawLayout()
 
         // Call the method and provide the display logic as the callback
         int lowerDataCount = 0;
-        dataModel.drawActiveSensors([&](int index, const TextKey titleKey, SensorValue value, SensorUnit unit, SensorId id)
+        dataModel.drawActiveSensors([&](int index, const TextKey titleKey, SensorValue value, const char *unitText, SensorId id)
                                     {
-                                        const char *unitText = unit.GetString();
                                         int valueLen = strlen(unitText);
                                         char valueStr[32];
                                         convertValueToString(valueStr, sizeof(valueStr), value);
@@ -169,7 +168,6 @@ void DisplayHandler::DrawLayout()
 
 void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
 {
-    Serial.println("drawSettingsPage1");
     lastUpdate = millis();
     lcd.clear(COLOR_NEUTRAL);
 
@@ -177,24 +175,10 @@ void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
     for (size_t i = 0; i < settings.getSettingsCount(); i++)
     {
         const SettingDef &setting = settings.getSettingDef(i);
-        const char *settingName = setting.GetString();
+        const char *settingName = setting.GetTitleString();
         char valueStr[32];
-        Serial.println("drawSettingsPage2");
-        // Pass the raw variant directly to std::visit
-        std::visit([&valueStr](const auto &arg)
-                   {
-            using T = std::decay_t<decltype(arg)>;
+        setting.GetOptionString(settings.getValueVariant(i), valueStr, sizeof(valueStr));
 
-            if constexpr (std::is_same_v<T, float>) {
-                dtostrf(arg, 1, 1, valueStr);
-            } 
-            else if constexpr (std::is_same_v<T, int> || std::is_same_v<T, uint8_t>) {
-                snprintf(valueStr, sizeof(valueStr), "%d", static_cast<int>(arg));
-            } 
-            else if constexpr (std::is_same_v<T, bool>) {
-                snprintf(valueStr, sizeof(valueStr), "%s", arg ? Translator::get(TextKey::SettingOn) : Translator::get(TextKey::SettingOff));
-            } }, settings.getValueVariant(i));
-        Serial.println("drawSettingsPage3");
         const int y_pos = 40 + i * 30;
         if (status.isEditing && status.currentSettingIndex == i)
         {
@@ -215,7 +199,6 @@ void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
 
     lcd.update();
     updateCounter++;
-    Serial.println("drawSettingsPage5");
 }
 
 void DisplayHandler::ResetDisplay()

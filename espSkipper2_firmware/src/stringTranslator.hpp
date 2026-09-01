@@ -26,6 +26,9 @@
     X(SettingDisplayDateTime, "Display Date and Time", "Datum es Ido Megjeleniese") \
     X(SettingDisplayTimeOnly, "Display Time Only", "Csak Ido Megjeleniese") \
     X(SettingDisplayUpdateTime, "Update screen every ms", "Kijelzo frissitese ms-enkent") \
+    X(SettingSpeedUnit, "Speed Unit", "Sebesseg Egyseg") \
+    X(SettingDistanceUnit, "Distance Unit", "Tavolsag Egyseg") \
+    X(SettingLanguage, "Language", "Nyelv") \
     X(SensorTiltPitch, "Tilt Pitch", "Doles bolintas") \
     X(SensorTiltPitchMin, "Pitch Min", "Bolint. Min") \
     X(SensorTiltPitchMax, "Pitch Max", "Bolint. Max") \
@@ -49,6 +52,8 @@
     X(SensorDateTimeDay, "Day", "Nap") \
     X(SensorDateTimeMonth, "Month", "Honap") \
     X(SensorDateTimeYear, "Year", "Ev") \
+    X(LanguageHungarianShort, "HU", "HU") \
+    X(LanguageEnglishShort, "EN", "EN") \
 
 // 2. Generate the Enum
 #define GENERATE_ENUM(KEY, EN, HU) KEY,
@@ -65,5 +70,5 @@ private:
 
 public:
     static void setLanguage(int langId);
-    static const char* get(TextKey key);
+    static const char* get(const TextKey key);
 };

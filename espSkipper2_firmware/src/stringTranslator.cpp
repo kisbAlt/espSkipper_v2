@@ -28,7 +28,7 @@ void Translator::setLanguage(int langId) {
     currentLang = langId;
 }
 
-const char* Translator::get(TextKey key) {
+const char* Translator::get(const TextKey key) {
     // Prevent out-of-bounds array access
     assert(key < TextKey::Count && "Translator: Invalid TextKey");
     return dictionaries[currentLang][static_cast<int>(key)];

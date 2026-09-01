@@ -34,6 +34,7 @@ enum class SensorId : size_t
 
 enum class SensorUnitEnum
 {
+    None,
     Kmph,
     Mps,
     Kilometer,
@@ -45,6 +46,17 @@ enum class SensorUnitEnum
     BlankUnit
 };
 
+enum class UnitType
+{
+    Speed,
+    Distance,
+    Temperature,
+    Angle,
+    None
+};
+
+const char* GetUnitString(SensorUnitEnum unitEnum);
+
 class SensorUnit {
     private:
     SensorUnitEnum sensorUnit;
@@ -52,6 +64,10 @@ class SensorUnit {
     SensorUnit();
     SensorUnit(SensorUnitEnum sensorUnitEnum);
     const char* GetString();
+    UnitType GetUnitType(SensorUnitEnum sensorUnitEnum) const;
+    UnitType GetUnitType() const;
+    bool IsSameUnitType(SensorUnitEnum sensorUnitEnum) const;
+    SensorUnitEnum GetUnitEnum() const { return sensorUnit; }
 };
 
 struct SensorValueString {
