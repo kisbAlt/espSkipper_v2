@@ -141,7 +141,7 @@ private:
          OptionList((uint8_t)SensorUnitEnum::Kilometer, (uint8_t)SensorUnitEnum::Meter), {TextKey::KilometerShort, TextKey::MeterShort}, true},
         {SettingsKey::Language,
          (uint8_t)0,
-         TextKey::SettingDistanceUnit,
+         TextKey::SettingLanguage,
          OptionList((uint8_t)0, (uint8_t)1), {TextKey::LanguageEnglishShort, TextKey::LanguageHungarianShort}, true}
 
     };
@@ -159,6 +159,7 @@ private:
 
     void disableSensor(SensorId id);
     void enableSensor(SensorId id);
+    bool isSensorEnabled(SensorId id) const;
     bool disabledSensors[static_cast<size_t>(SensorId::MAX_SENSORS)] = {false};
     Preferences preferences;
 

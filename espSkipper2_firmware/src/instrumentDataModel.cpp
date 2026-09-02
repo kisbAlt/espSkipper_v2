@@ -126,6 +126,7 @@ UnitType SensorUnit::GetUnitType(SensorUnitEnum sensorUnitEnum) const
         return UnitType::Speed;
     case SensorUnitEnum::Kilometer:
     case SensorUnitEnum::Meter:
+    case SensorUnitEnum::Feet:
         return UnitType::Distance;
     case SensorUnitEnum::Celsius:
         return UnitType::Temperature;
@@ -176,7 +177,7 @@ SensorValue InstrumentDataModel::SensorRecord::GetValueInUnit(SensorUnitEnum tar
         return value;
     }
 
-    if (unit.IsSameUnitType(targetUnitEnum) || unit.GetUnitType() == UnitType::None)
+    if (!unit.IsSameUnitType(targetUnitEnum) || unit.GetUnitType() == UnitType::None)
     {
         return value;
     }

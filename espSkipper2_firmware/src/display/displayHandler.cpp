@@ -50,8 +50,6 @@ void DisplayHandler::convertValueToString(char *valueStr, int len, SensorValue v
             snprintf(valueStr, len, "%d", arg);
         } 
         else if constexpr (std::is_same_v<T, SensorValueString>) {
-            Serial.print("CourseDISP:     ");
-            Serial.println(arg.text);
             snprintf(valueStr, len, "%s", arg.text);
         } }, value);
 }

@@ -93,6 +93,13 @@ void Settings::enableSensor(SensorId id)
         disabledSensors[static_cast<size_t>(id)] = false;
 }
 
+bool Settings::isSensorEnabled(SensorId id) const
+{
+    if (id < SensorId::MAX_SENSORS)
+        return !disabledSensors[static_cast<size_t>(id)];
+    return false;
+}
+
 const char *SettingDef::GetTitleString() const
 {
     return Translator::get(displayName);
