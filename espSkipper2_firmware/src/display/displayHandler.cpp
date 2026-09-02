@@ -170,29 +170,68 @@ void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
     lcd.clear(COLOR_NEUTRAL);
 
     DisplayUtils::DrawTextCentered(lcd, 15, "Settings", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
-    for (size_t i = 0; i < settings.getSettingsCount(); i++)
+    int y_pos = 40;
+    const int fitItemCount = 12;
+    switch (status.mode)
     {
-        const SettingDef &setting = settings.getSettingDef(i);
-        const char *settingName = setting.GetTitleString();
-        char valueStr[32];
-        setting.GetOptionString(settings.getValueVariant(i), valueStr, sizeof(valueStr));
-
-        const int y_pos = 40 + i * 30;
-        if (status.isEditing && status.currentSettingIndex == i)
+    case SettingDisplayMode::SettingsList:
+    {
+        int y_pos = 40;
+        for (size_t i = 0; i < settings.getSettingsCount(); i++)
         {
-            lcd.fillRect(2, y_pos - 4, 296, 24, COLOR_BLACK);
-            DisplayUtils::DrawText(lcd, 10, y_pos, settingName, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
-            DisplayUtils::DrawText(lcd, 255, y_pos, valueStr, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
-        }
-        else
-        {
-            DisplayUtils::DrawText(lcd, 10, y_pos, settingName, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
-            DisplayUtils::DrawText(lcd, 255, y_pos, valueStr, COLOR_RED, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
-            if (status.currentSettingIndex == i)
+            const SettingDef &setting = settings.getSettingDef(i);
+            const char *settingName = setting.GetTitleString();
+            char valueStr[32];
+            setting.GetOptionString(settings.getValueVariant(i), valueStr, sizeof(valueStr));
+            if (status.isEditing && status.currentSettingIndex == i)
             {
-                lcd.drawRect(2, y_pos - 4, 296, 24, COLOR_BLACK);
+                lcd.fillRect(2, y_pos - 4, 296, 24, COLOR_BLACK);
+                DisplayUtils::DrawText(lcd, 10, y_pos, settingName, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
+                DisplayUtils::DrawText(lcd, 255, y_pos, valueStr, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
             }
+            else
+            {
+                DisplayUtils::DrawText(lcd, 10, y_pos, settingName, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
+                DisplayUtils::DrawText(lcd, 255, y_pos, valueStr, COLOR_RED, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+                if (status.currentSettingIndex == i)
+                {
+                    lcd.drawRect(2, y_pos - 4, 296, 24, COLOR_BLACK);
+                }
+            }
+            y_pos += 30;
         }
+        break;
+    }
+    case SettingDisplayMode::SensorList:
+    {
+        const char *onText = Translator::get(TextKey::SettingOn);
+        const char *offText = Translator::get(TextKey::SettingOff);
+        const int startIndex = status.currentSettingIndex > fitItemCount ? status.currentSettingIndex - fitItemCount+1 : 0;
+        for (size_t i = startIndex; i < static_cast<size_t>(SensorId::MAX_SENSORS) && i < status.currentSettingIndex + fitItemCount; i++)
+        {
+            const SensorId sensorId = static_cast<SensorId>(i);
+            const char *sensorName = Translator::get(dataModel.getSensorTitleKey(sensorId));
+            if (status.isEditing && status.currentSettingIndex == i)
+            {
+                lcd.fillRect(2, y_pos - 4, 296, 24, COLOR_BLACK);
+                DisplayUtils::DrawText(lcd, 10, y_pos, sensorName, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
+                DisplayUtils::DrawText(lcd, 255, y_pos, dataModel.isSensorEnabled(sensorId) ? onText : offText, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+            }
+            else
+            {
+                DisplayUtils::DrawText(lcd, 10, y_pos, sensorName, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
+                DisplayUtils::DrawText(lcd, 255, y_pos, dataModel.isSensorEnabled(sensorId) ? onText : offText, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+                if (status.currentSettingIndex == i)
+                {
+                    lcd.drawRect(2, y_pos - 4, 296, 24, COLOR_BLACK);
+                }
+            }
+            y_pos += 30;
+        }
+        break;
+    }
+    default:
+        break;
     }
 
     lcd.update();

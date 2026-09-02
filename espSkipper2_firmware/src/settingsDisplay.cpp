@@ -33,33 +33,84 @@ bool SettingsDisplay::processButtonEvent(ButtonEvent btnEvent, ButtonName btnNam
             switch (btnName)
             {
             case ButtonName::BUTTON0:
-                status.isEditing = status.isEditing ? false : true;
+                if (settings.getSettingDef(status.currentSettingIndex).key == SettingsKey::DisabledSensors)
+                {
+                    status.mode = (status.mode == SettingDisplayMode::SettingsList) ? SettingDisplayMode::SensorList : SettingDisplayMode::SettingsList;
+                    status.currentSettingIndex = 0;
+                }
+                else
+                {
+                    status.isEditing = status.isEditing ? false : true;
+                }
                 break;
             case ButtonName::BUTTON1:
-                if (status.isEditing)
+                if (status.mode == SettingDisplayMode::SensorList)
                 {
-                    settings.setPreviousValue(status.currentSettingIndex);
+                    if (status.isEditing)
+                    {
+                        if (settings.isSensorEnabled(static_cast<SensorId>(status.currentSettingIndex)))
+                            settings.disableSensor(static_cast<SensorId>(status.currentSettingIndex));
+                        else
+                            settings.enableSensor(static_cast<SensorId>(status.currentSettingIndex));
+                    }
+                    else
+                    {
+                        status.currentSettingIndex = status.currentSettingIndex > 0 ? status.currentSettingIndex - 1 : static_cast<int>(SensorId::MAX_SENSORS) - 1;
+                    }
                 }
                 else
                 {
-                    status.currentSettingIndex = status.currentSettingIndex > 0 ? status.currentSettingIndex - 1 : settings.getSettingsCount() - 1;
+                    if (status.isEditing)
+                    {
+                        settings.setPreviousValue(status.currentSettingIndex);
+                    }
+                    else
+                    {
+                        status.currentSettingIndex = status.currentSettingIndex > 0 ? status.currentSettingIndex - 1 : settings.getSettingsCount() - 1;
+                    }
                 }
-
                 break;
             case ButtonName::BUTTON2:
-                if (status.isEditing)
+                if (status.mode == SettingDisplayMode::SensorList)
                 {
-                    settings.setNextValue(status.currentSettingIndex);
+                    if (status.isEditing)
+                    {
+                        if (settings.isSensorEnabled(static_cast<SensorId>(status.currentSettingIndex)))
+                            settings.disableSensor(static_cast<SensorId>(status.currentSettingIndex));
+                        else
+                            settings.enableSensor(static_cast<SensorId>(status.currentSettingIndex));
+                    }
+                    else
+                    {
+                        status.currentSettingIndex = (status.currentSettingIndex + 1) % static_cast<int>(SensorId::MAX_SENSORS);
+                    }
                 }
                 else
                 {
-                    status.currentSettingIndex = (status.currentSettingIndex + 1) % settings.getSettingsCount();
+                    if (status.isEditing)
+                    {
+                        settings.setNextValue(status.currentSettingIndex);
+                    }
+                    else
+                    {
+                        status.currentSettingIndex = (status.currentSettingIndex + 1) % settings.getSettingsCount();
+                    }
                 }
 
                 break;
             case ButtonName::BUTTON3:
-                xSemaphoreGive(dataMutex);
-                return false;
+                if (status.mode == SettingDisplayMode::SensorList)
+                {
+                    status.isEditing = false;
+                    status.currentSettingIndex = 0;
+                    status.mode = SettingDisplayMode::SettingsList;
+                }
+                else
+                {
+                    xSemaphoreGive(dataMutex);
+                    return false;
+                }
+
                 break;
             }
             xSemaphoreGive(dataMutex);
@@ -85,7 +136,7 @@ void SettingsDisplay::drawSettingsUI()
     {
         lastButtonEvent = ButtonEvent::NONE;
         lastButtonName = ButtonName::NONE;
-        xSemaphoreGive(dataMutex); 
+        xSemaphoreGive(dataMutex);
     }
 
     Serial.println("drawSettingsUI1");
@@ -107,10 +158,10 @@ void SettingsDisplay::drawSettingsUI()
             lastButtonName = ButtonName::NONE;
             xSemaphoreGive(dataMutex);
         }
-        
+
         running = processButtonEvent(currButtonEvent, currButtonName);
 
-        if (running) 
+        if (running)
         {
             displayHandler.DrawSettingsPage(status);
         }

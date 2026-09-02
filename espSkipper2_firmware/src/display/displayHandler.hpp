@@ -12,9 +12,15 @@ enum class UpdatePage {
     SETTINGS_SCREEN
 };
 
+enum class SettingDisplayMode {
+    SettingsList,
+    SensorList
+};
+
 struct SettingsDisplayStatus {
     uint8_t currentSettingIndex = 0;
     bool isEditing = false;
+    SettingDisplayMode mode = SettingDisplayMode::SettingsList;
 };
 
 class DisplayHandler

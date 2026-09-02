@@ -2,6 +2,7 @@
 
 // 1. Define the Master Table
 #define TRANSLATION_TABLE(X) \
+    X(Empty,          "",          "") \
     X(Kmph,           "km/h",       "km/h") \
     X(Mps,            "m/s",        "m/s") \
     X(KilometerShort, "km",         "km") \
@@ -29,6 +30,7 @@
     X(SettingSpeedUnit, "Speed Unit", "Sebesseg Egyseg") \
     X(SettingDistanceUnit, "Distance Unit", "Tavolsag Egyseg") \
     X(SettingLanguage, "Language", "Nyelv") \
+    X(SettingDisabledSensors, "Disabled Sensors", "Letiltott Szenzorok") \
     X(SensorTiltPitch, "Tilt Pitch", "Doles bolintas") \
     X(SensorTiltPitchMin, "Pitch Min", "Bolint. Min") \
     X(SensorTiltPitchMax, "Pitch Max", "Bolint. Max") \

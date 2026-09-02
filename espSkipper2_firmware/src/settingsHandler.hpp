@@ -21,7 +21,8 @@ enum class SettingsKey
     SpeedUnit,
     DistanceUnit,
     TemperatureUnit,
-    Language
+    Language,
+    DisabledSensors
 };
 using SettingValue = std::variant<bool, int, float, uint8_t, TextKey>;
 #define OPTION_COUNT 8
@@ -45,7 +46,7 @@ struct SettingDef
     bool useOptionsText = false;
 
     const char *GetTitleString() const;
-    void GetOptionString(const SettingValue& currentValue, char *buffer, std::size_t bufferSize) const;
+    void GetOptionString(const SettingValue &currentValue, char *buffer, std::size_t bufferSize) const;
 };
 
 class Settings
@@ -54,7 +55,7 @@ public:
     Settings();
     void begin();
     bool isSensorDisabled(SensorId id) const;
-    uint8_t getSettingsCount() const { return Count; }
+    constexpr uint8_t getSettingsCount() const { return Count; }
 
     template <typename T>
     bool setValue(SettingsKey key, T value)
@@ -98,9 +99,12 @@ public:
 
     void setNextValue(size_t index);
     void setPreviousValue(size_t index);
+    void enableSensor(SensorId id);
+    void disableSensor(SensorId id);
+    bool isSensorEnabled(SensorId id) const;
 
 private:
-    static constexpr std::size_t Count = 10;
+    static constexpr std::size_t Count = 11;
 
     static constexpr SettingDef Schema[Count] = {
         {SettingsKey::BtnBrightness,
@@ -134,15 +138,27 @@ private:
         {SettingsKey::SpeedUnit,
          (uint8_t)SensorUnitEnum::Kmph,
          TextKey::SettingSpeedUnit,
-         OptionList((uint8_t)SensorUnitEnum::Kmph, (uint8_t)SensorUnitEnum::Mps, (uint8_t)SensorUnitEnum::Knots), {TextKey::Kmph, TextKey::Mps, TextKey::KnotsShort}, true},
+         OptionList((uint8_t)SensorUnitEnum::Kmph, (uint8_t)SensorUnitEnum::Mps, (uint8_t)SensorUnitEnum::Knots),
+         {TextKey::Kmph, TextKey::Mps, TextKey::KnotsShort},
+         true},
         {SettingsKey::DistanceUnit,
          (uint8_t)SensorUnitEnum::Kilometer,
          TextKey::SettingDistanceUnit,
-         OptionList((uint8_t)SensorUnitEnum::Kilometer, (uint8_t)SensorUnitEnum::Meter), {TextKey::KilometerShort, TextKey::MeterShort}, true},
+         OptionList((uint8_t)SensorUnitEnum::Kilometer, (uint8_t)SensorUnitEnum::Meter),
+         {TextKey::KilometerShort, TextKey::MeterShort},
+         true},
         {SettingsKey::Language,
          (uint8_t)0,
          TextKey::SettingLanguage,
-         OptionList((uint8_t)0, (uint8_t)1), {TextKey::LanguageEnglishShort, TextKey::LanguageHungarianShort}, true}
+         OptionList((uint8_t)0, (uint8_t)1),
+         {TextKey::LanguageEnglishShort, TextKey::LanguageHungarianShort},
+         true},
+        {SettingsKey::DisabledSensors,
+         bool(true),
+         TextKey::SettingDisabledSensors,
+         OptionList(bool(false), bool(true)),
+         {TextKey::Empty, TextKey::Empty},
+         true},
 
     };
     SettingValue currentValues[Count];
@@ -156,10 +172,6 @@ private:
         }
         return 0; // Fallback
     }
-
-    void disableSensor(SensorId id);
-    void enableSensor(SensorId id);
-    bool isSensorEnabled(SensorId id) const;
     bool disabledSensors[static_cast<size_t>(SensorId::MAX_SENSORS)] = {false};
     Preferences preferences;
 

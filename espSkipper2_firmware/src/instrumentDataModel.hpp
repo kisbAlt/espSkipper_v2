@@ -40,6 +40,7 @@ public:
     bool isSensorEnabled(SensorId id) const;
     bool sensorHaveData(SensorId id) const;
     SensorValue getSensorValue(SensorId id) const;
+    TextKey getSensorTitleKey(SensorId id) const;
     bool isSensorEnabledAndHaveData(SensorId id) const;
     std::vector<std::pair<SensorId, SensorValue>> getDisplaySnapshot() const;
     int getActiveSensorCount() const;

@@ -66,6 +66,12 @@ SensorValue InstrumentDataModel::getSensorValue(SensorId id) const
     return m_data[static_cast<size_t>(id)].value;
 }
 
+TextKey InstrumentDataModel::getSensorTitleKey(SensorId id) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_data[static_cast<size_t>(id)].titleKey;
+}
+
 bool InstrumentDataModel::isSensorEnabledAndHaveData(SensorId id) const
 {
     return isSensorEnabled(id) && sensorHaveData(id);
