@@ -28,7 +28,9 @@ class DisplayHandler
 private:
     enum class DisplayLayout
     {
-        ThreeColTwoRow
+        ThreeColTwoRow,
+        WindPage,
+        MAX_LAYOUTs
     };
     enum class StringConvertType
     {

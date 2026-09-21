@@ -9,6 +9,7 @@
 #include "SPI.h"
 #include "fonts.hpp"
 #include "settingsHandler.hpp"
+#include "bitmaps.h"
 
 // Shape 1 (Red Box) Variables
 int boxSize = 40;
@@ -159,6 +160,18 @@ void DisplayHandler::DrawLayout()
                                         } }); // End of callback
         break;
     }
+    case DisplayLayout::WindPage:
+    {
+        DisplayUtils::DrawTextCentered(lcd, 15, "Wind", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+
+        lcd.drawBitmap(0, 0, epd_bitmap_wind_gimp, 300, 400, COLOR_BLACK);
+        lcd.drawBitmapRotated(0, 0, epd_bitmap_wind_hand, 300, 400, COLOR_BLACK, 45);
+        DisplayUtils::DrawTextCentered(lcd, 212, "SOG", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+        DisplayUtils::DrawTextCentered(lcd, 265, "16.5", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 3);
+        DisplayUtils::DrawTextCentered(lcd, 295, "Knots", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+
+        break;
+    }
     default:
         break;
     }
@@ -278,12 +291,13 @@ void DisplayHandler::stepFocusedSensor()
 
 void DisplayHandler::nextDisplayPage()
 {
-    if ((currentSensorDrawn() + (pageIndex * currentSensorDrawn() - pageIndex)) < dataModel.getActiveSensorCount())
+    if (currentLayout == DisplayLayout::ThreeColTwoRow && (currentSensorDrawn() + (pageIndex * currentSensorDrawn() - pageIndex)) < dataModel.getActiveSensorCount())
     {
         pageIndex++;
     }
     else
     {
         pageIndex = 0;
+        currentLayout = static_cast<DisplayLayout>((static_cast<int>(currentLayout) + 1) % static_cast<int>(DisplayLayout::MAX_LAYOUTs));
     }
 }

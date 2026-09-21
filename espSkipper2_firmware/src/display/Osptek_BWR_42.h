@@ -33,6 +33,9 @@ public:
     void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, OspColor color);
     void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, OspColor color);
     void drawCircle(int16_t x0, int16_t y0, int16_t r, OspColor color);
+    
+    void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, OspColor color);
+    void drawBitmapRotated(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, OspColor color, float angle);
 
 private:
     int8_t _cs, _dc, _rst, _te, _led;

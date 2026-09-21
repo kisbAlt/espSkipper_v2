@@ -217,3 +217,46 @@ void OsptekBWR::drawCircle(int16_t x0, int16_t y0, int16_t r, OspColor color) {
         drawPixel(x0 - y, y0 - x, color);
     }
 }
+
+void OsptekBWR::drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, OspColor color)
+{
+    int16_t byteWidth = (w + 7) / 8; // Bytes per row
+    
+    for (int16_t j = 0; j < h; j++) {
+        for (int16_t i = 0; i < w; i++) {
+            // Read the exact byte, then mask the exact bit
+            if (bitmap[j * byteWidth + i / 8] & (128 >> (i & 7))) {
+                drawPixel(x + i, y + j, color);
+            }
+        }
+    }
+}
+
+void OsptekBWR::drawBitmapRotated(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, OspColor color, float angle) {
+    int16_t byteWidth = (w + 7) / 8; 
+    
+    // Convert angle from degrees to radians
+    float rad = angle * 0.01745329251; // (angle * PI / 180)
+    
+    // Pre-calculate sine and cosine to save processing power inside the loop
+    float s = sin(rad);
+    float c = cos(rad);
+    
+    // Find the center of the bitmap to act as the pivot point
+    float cx = w / 2.0;
+    float cy = h / 2.0;
+    
+    for (int16_t j = 0; j < h; j++) {
+        for (int16_t i = 0; i < w; i++) {
+            // Check if the pixel should be drawn
+            if (bitmap[j * byteWidth + i / 8] & (128 >> (i & 7))) {
+                
+                // Apply 2D rotation matrix relative to the center of the bitmap
+                int16_t drawX = x + (int16_t)round((i - cx) * c - (j - cy) * s + cx);
+                int16_t drawY = y + (int16_t)round((i - cx) * s + (j - cy) * c + cy);
+                
+                drawPixel(drawX, drawY, color);
+            }
+        }
+    }
+}
