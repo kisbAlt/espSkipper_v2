@@ -162,12 +162,22 @@ void DisplayHandler::DrawLayout()
     }
     case DisplayLayout::WindPage:
     {
+        const int wind = 127;
+
         DisplayUtils::DrawTextCentered(lcd, 15, "Wind", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
 
         lcd.drawBitmap(0, 0, epd_bitmap_wind_gimp, 300, 400, COLOR_BLACK);
-        lcd.drawBitmapRotated(0, 0, epd_bitmap_wind_hand, 300, 400, COLOR_BLACK, 45);
+        lcd.drawBitmapRotated(0, 0, epd_bitmap_wind_hand, 300, 400, COLOR_BLACK, 175);
+
+        if (wind <= 90 || wind > 270)
+        {
+            DisplayUtils::DrawTextCentered(lcd, 265, "16.5", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 3);
+            return;
+        } else {
+            DisplayUtils::DrawTextCentered(lcd, 165, "16.5", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 3);
+        }
+
         DisplayUtils::DrawTextCentered(lcd, 212, "SOG", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
-        DisplayUtils::DrawTextCentered(lcd, 265, "16.5", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 3);
         DisplayUtils::DrawTextCentered(lcd, 295, "Knots", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
 
         break;
