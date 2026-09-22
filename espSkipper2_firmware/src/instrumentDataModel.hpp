@@ -29,6 +29,7 @@ private:
     std::array<SensorRecord, static_cast<size_t>(SensorId::MAX_SENSORS)> m_data;
     mutable std::mutex m_mutex;
     const Settings &m_settings;
+    SensorUnitEnum getCurrentUnitForSensor(SensorId id) const;
 
 public:
     InstrumentDataModel(const Settings &settings);
@@ -40,11 +41,14 @@ public:
     bool isSensorEnabled(SensorId id) const;
     bool sensorHaveData(SensorId id) const;
     SensorValue getSensorValue(SensorId id) const;
+    SensorValue getSensorValueInUnit(SensorId id, SensorUnitEnum targetUnitEnum) const;
     TextKey getSensorTitleKey(SensorId id) const;
     bool isSensorEnabledAndHaveData(SensorId id) const;
     std::vector<std::pair<SensorId, SensorValue>> getDisplaySnapshot() const;
     int getActiveSensorCount() const;
     void reload();
+    void writeCurrentUnitString(char* unitString, size_t bufferSize, SensorId id) const;
+    SensorValue getSensorValueCurrentUnit(SensorId id) const;
 
     inline static int fast_round_positive(float x)
     {
@@ -62,18 +66,7 @@ public:
             {
                 std::lock_guard<std::mutex> lock(m_mutex);
                 std::visit([](const auto &arg) {}, m_data[i].value);
-                SensorUnitEnum settingsUnit;
-                switch (m_data[i].unit.GetUnitType())
-                {
-                case UnitType::Speed:
-                    settingsUnit = static_cast<SensorUnitEnum>(m_settings.getValue<uint8_t>(SettingsKey::SpeedUnit));
-                    break;
-                case UnitType::Distance:
-                    settingsUnit = static_cast<SensorUnitEnum>(m_settings.getValue<uint8_t>(SettingsKey::DistanceUnit));
-                    break;
-                default:
-                    settingsUnit = m_data[i].unit.GetUnitEnum();
-                }
+                SensorUnitEnum settingsUnit = getCurrentUnitForSensor(m_data[i].id);
                 cb(displayIndex, m_data[i].titleKey, m_data[i].GetValueInUnit(settingsUnit), GetUnitString(settingsUnit), m_data[i].id);
                 displayIndex++;
             }

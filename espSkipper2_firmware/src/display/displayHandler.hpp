@@ -45,7 +45,7 @@ private:
     const Settings& settings;
 
     SensorId focusedSensor = SensorId::GpsSpeed;
-    void convertValueToString(char *valueStr, int len, SensorValue value);
+    void convertValueToString(char *valueStr, int len, SensorValue value, SensorId id);
     int currentSensorDrawn() const;
     
 public:

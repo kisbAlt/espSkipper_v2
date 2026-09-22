@@ -2,6 +2,23 @@
 #include "stringTranslator.hpp"
 #include "instrumentDataFormats.hpp"
 
+SensorUnitEnum InstrumentDataModel::getCurrentUnitForSensor(SensorId id) const
+{
+    SensorUnitEnum settingsUnit;
+    switch (m_data[static_cast<size_t>(id)].unit.GetUnitType())
+    {
+        case UnitType::Speed:
+            settingsUnit = static_cast<SensorUnitEnum>(m_settings.getValue<uint8_t>(SettingsKey::SpeedUnit));
+            break;
+        case UnitType::Distance:
+            settingsUnit = static_cast<SensorUnitEnum>(m_settings.getValue<uint8_t>(SettingsKey::DistanceUnit));
+            break;
+        default:
+            settingsUnit = m_data[static_cast<size_t>(id)].unit.GetUnitEnum();
+    }
+    return settingsUnit;
+}
+
 InstrumentDataModel::InstrumentDataModel(const Settings &settings) : m_settings(settings)
 {
 }
@@ -66,6 +83,12 @@ SensorValue InstrumentDataModel::getSensorValue(SensorId id) const
     return m_data[static_cast<size_t>(id)].value;
 }
 
+SensorValue InstrumentDataModel::getSensorValueInUnit(SensorId id, SensorUnitEnum targetUnitEnum) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_data[static_cast<size_t>(id)].GetValueInUnit(targetUnitEnum);
+}
+
 TextKey InstrumentDataModel::getSensorTitleKey(SensorId id) const
 {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -108,6 +131,21 @@ int InstrumentDataModel::getActiveSensorCount() const
 
 void InstrumentDataModel::reload()
 {
+}
+
+void InstrumentDataModel::writeCurrentUnitString(char *unitString, size_t bufferSize, SensorId id) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    SensorUnitEnum settingsUnit = getCurrentUnitForSensor(id);
+    strncpy(unitString, GetUnitString(settingsUnit), bufferSize - 1);
+    unitString[bufferSize - 1] = '\0';
+}
+
+SensorValue InstrumentDataModel::getSensorValueCurrentUnit(SensorId id) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    SensorUnitEnum settingsUnit = getCurrentUnitForSensor(id);
+    return m_data[static_cast<size_t>(id)].GetValueInUnit(settingsUnit);
 }
 
 SensorUnit::SensorUnit() : sensorUnit(SensorUnitEnum::BlankUnit)

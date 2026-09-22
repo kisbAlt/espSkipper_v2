@@ -41,7 +41,9 @@
     X(SensorTiltRollAvg, "Roll Avg", "Doles atl") \
     X(SensorDepth, "Water Depth", "Vizmelyseg") \
     X(SensorWindDirection, "Wind Direction", "Szelirany") \
-    X(SensorWindSpeed, "Wind Speed", "Szelsebesseg") \
+    X(SensorWindDirectionAWA, "AWA", "AWA") \
+    X(SensorWindSpeed, "TWS", "TWS") \
+    X(SensorWindSpeedAWS, "AWS", "AWS") \
     X(SensorGpsSpeed, "GPS Speed", "GPS Sebesseg") \
     X(SensorSatelliteCount, "Satellite Count", "Muholdak") \
     X(SensorMinGpsSpeed, "GPS Speed Min", "GPS Sebesseg Min") \

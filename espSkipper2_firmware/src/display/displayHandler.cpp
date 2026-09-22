@@ -38,9 +38,9 @@ int countDigits4(int x)
     }
 }
 
-void DisplayHandler::convertValueToString(char *valueStr, int len, SensorValue value)
+void DisplayHandler::convertValueToString(char *valueStr, int len, SensorValue value, SensorId id)
 {
-    std::visit([&valueStr, len](const auto &arg)
+    std::visit([&valueStr, len, id](const auto &arg)
                {
         using T = std::decay_t<decltype(arg)>;
 
@@ -48,7 +48,12 @@ void DisplayHandler::convertValueToString(char *valueStr, int len, SensorValue v
             dtostrf(arg, 1, 1, valueStr);
         } 
         else if constexpr (std::is_same_v<T, int>) {
-            snprintf(valueStr, len, "%d", arg);
+            if(id == SensorId::WindDirection){
+                snprintf(valueStr, len, "%03d", arg);
+            } else {
+                snprintf(valueStr, len, "%d", arg);
+            }
+            
         } 
         else if constexpr (std::is_same_v<T, SensorValueString>) {
             snprintf(valueStr, len, "%s", arg.text);
@@ -125,7 +130,7 @@ void DisplayHandler::DrawLayout()
                                     {
                                         int valueLen = strlen(unitText);
                                         char valueStr[32];
-                                        convertValueToString(valueStr, sizeof(valueStr), value);
+                                        convertValueToString(valueStr, sizeof(valueStr), value, id);
                                         if (id == focusedSensor)
                                         {
                                             const int top_margin = 10;
@@ -162,23 +167,31 @@ void DisplayHandler::DrawLayout()
     }
     case DisplayLayout::WindPage:
     {
-        const int wind = 127;
 
         DisplayUtils::DrawTextCentered(lcd, 15, "Wind", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
 
+        char valueStr[32];
+        convertValueToString(valueStr, sizeof(valueStr), dataModel.getSensorValueCurrentUnit(SensorId::WindSpeedAWS), SensorId::WindSpeedAWS);
+
+        const int wind = std::get<int>(dataModel.getSensorValueCurrentUnit(SensorId::WindDirectionAWA));
+
+        char unitStr[32];
+        dataModel.writeCurrentUnitString(unitStr, sizeof(unitStr), SensorId::WindSpeedAWS);
+
         lcd.drawBitmap(0, 0, epd_bitmap_wind_gimp, 300, 400, COLOR_BLACK);
-        lcd.drawBitmapRotated(0, 0, epd_bitmap_wind_hand, 300, 400, COLOR_BLACK, 175);
+        lcd.drawBitmapRotated(0, 0, epd_bitmap_wind_hand, 300, 400, COLOR_BLACK, wind);
 
         if (wind <= 90 || wind > 270)
         {
-            DisplayUtils::DrawTextCentered(lcd, 265, "16.5", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 3);
-            return;
+            DisplayUtils::DrawTextCentered(lcd, 265, valueStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 3);
+            DisplayUtils::DrawTextCentered(lcd, 212, Translator::get(TextKey::SensorWindSpeedAWS), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
         } else {
-            DisplayUtils::DrawTextCentered(lcd, 165, "16.5", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 3);
+            DisplayUtils::DrawTextCentered(lcd, 165, valueStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 3);
+            DisplayUtils::DrawTextCentered(lcd, 112, Translator::get(TextKey::SensorWindSpeedAWS), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
         }
 
-        DisplayUtils::DrawTextCentered(lcd, 212, "SOG", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
-        DisplayUtils::DrawTextCentered(lcd, 295, "Knots", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+        
+        DisplayUtils::DrawTextCentered(lcd, 295, unitStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
 
         break;
     }

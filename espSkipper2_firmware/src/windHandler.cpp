@@ -26,10 +26,39 @@ uint16_t WindHandler::calculateCRC(byte *buf, int len)
     return crc;
 }
 
+WindHandler::ApparentWind WindHandler::calculateApparentWind(const float gpsSpeed, int windDirection, float windSpeed) const
+{
+    ApparentWind aw;
+    
+    // Convert True Wind Angle (degrees) to radians
+    float twaRad = windDirection * PI / 180.0;
+
+    // Calculate the vector components
+    float crosswind = windSpeed * sin(twaRad);
+    float headwind = (windSpeed * cos(twaRad)) + gpsSpeed;
+
+    // 1. Calculate Apparent Wind Speed using the hypotenuse
+    aw.speed = hypot(crosswind, headwind);
+
+    // 2. Calculate Apparent Wind Angle
+    float awaRad = atan2(crosswind, headwind);
+    aw.angle = awaRad * 180.0 / PI;
+
+    // Normalize angle to 0-359
+    if (aw.angle < 0) {
+        aw.angle += 360.0;
+    }
+
+    return aw;
+}
+
 void WindHandler::init()
 {
     dataModel.addSensor(SensorId::WindSpeed, 0.0f, SensorUnit(SensorUnitEnum::Mps), TextKey::SensorWindSpeed);
-    dataModel.addSensor(SensorId::WindDirection, SensorValueString{}, SensorUnit(SensorUnitEnum::Degrees), TextKey::SensorWindDirection);
+    dataModel.addSensor(SensorId::WindSpeedAWS, 0.0f, SensorUnit(SensorUnitEnum::Mps), TextKey::SensorWindSpeedAWS);
+    dataModel.addSensor(SensorId::WindDirection, int(0), SensorUnit(SensorUnitEnum::Degrees), TextKey::SensorWindDirection);
+    dataModel.addSensor(SensorId::WindDirectionAWA, int(0), SensorUnit(SensorUnitEnum::Degrees), TextKey::SensorWindDirectionAWA);
+
 
 // NEW LINE: Anchor the RX pin HIGH while the SP3485 is in transmit mode
     // to prevent floating phantom bytes from blinding the UART.
@@ -111,12 +140,15 @@ void WindHandler::updateWindData()
 
                         uint16_t dirRaw = (responseBuffer[5] << 8) | responseBuffer[6];
                         int windDirection = dirRaw; 
+                        const float gpsSpeed = std::get<float>(dataModel.getSensorValueInUnit(SensorId::GpsSpeed, SensorUnitEnum::Mps));
+                        ApparentWind apparentWind = calculateApparentWind(gpsSpeed, windDirection, windSpeed);
                         
-                        Serial.printf("Wind Speed: %.2f m/s | Direction: %d deg\n", windSpeed, windDirection);
                         dataModel.updateSensor(SensorId::WindSpeed, windSpeed);
+                        dataModel.updateSensor(SensorId::WindSpeedAWS, apparentWind.speed);
                         SensorValueString dirStr;
-                        snprintf(dirStr.text, sizeof(dirStr.text), "%03d", windDirection);
-                        dataModel.updateSensor(SensorId::WindDirection, dirStr);
+                        
+                        dataModel.updateSensor(SensorId::WindDirection, windDirection);
+                        dataModel.updateSensor(SensorId::WindDirectionAWA, apparentWind.angle);
                     }
                     else
                     {
