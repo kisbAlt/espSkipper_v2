@@ -132,10 +132,9 @@ void DisplayHandler::DrawLayout()
 
                                             int unitX = cellX + 149 - (valueLen * 12);
 
-                                            // 5. Draw the Unit Text (Size 1 or 2)
                                             DisplayUtils::DrawText(lcd, unitX, cellY, unitText, COLOR_RED, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
                                             ++lowerDataCount;
-                                        } }); // End of callback
+                                        } });
         break;
     }
     case DisplayLayout::WindPage:

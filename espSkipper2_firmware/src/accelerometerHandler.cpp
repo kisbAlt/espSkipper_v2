@@ -49,8 +49,8 @@ void AccelerometerHandler::readAccelerometerData()
     const float lastRoll = atan2(-virt_x, sqrt((virt_y * virt_y) + (virt_z * virt_z))) * (180.0 / PI);
     const float lastPitch  = atan2(virt_y, virt_z) * (180.0 / PI);
 
-    const int rollRounded = InstrumentDataModel::fast_round_positive(lastRoll);
-    const int pitchRounded = InstrumentDataModel::fast_round_positive(lastPitch);
+    const int rollRounded = InstrumentDataModel::fast_round_positive(InstrumentDataModel::make_positive(lastRoll));
+    const int pitchRounded = InstrumentDataModel::fast_round_positive(InstrumentDataModel::make_positive(lastPitch));
 
     dataModel.updateSensor(SensorId::TiltPitch, pitchRounded);
     dataModel.updateSensor(SensorId::TiltPitchAvg, pitchRounded);

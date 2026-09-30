@@ -8,8 +8,8 @@
 class WindHandler {
 private:
     struct ApparentWind {
-        float angle;
-        int speed;
+        int angle;
+        float speed;
     };
     InstrumentDataModel& dataModel;
     const static constexpr byte windSensorReq[8] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x0B};

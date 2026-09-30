@@ -1,8 +1,5 @@
 #include "Osptek_BWR_42.h"
 
-// Using standard VSPI or HSPI. Adjust if using custom SPI instance.
-//static SPIClass *lcd_spi = new SPIClass(FSPI);
-
 OsptekBWR::OsptekBWR(int8_t cs, int8_t dc, int8_t rst, int8_t te, int8_t led) 
     : _cs(cs), _dc(dc), _rst(rst), _te(te), _led(led) {}
 
@@ -18,11 +15,6 @@ void OsptekBWR::begin(bool highSpeedMode) {
     digitalWrite(_cs, HIGH);
 
     freq = _hpm_mode ? 20000000 : 10000000;
-
-    // REMOVE THIS LINE: lcd_spi->begin(12, -1, 11, _cs);
-
-    // CHANGE TO SPI:
-    //SPI.beginTransaction(SPISettings(freq, MSBFIRST, SPI_MODE0));
 
     initRegs();
 }

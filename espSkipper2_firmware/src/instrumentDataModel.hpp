@@ -50,6 +50,11 @@ public:
     void writeCurrentUnitString(char* unitString, size_t bufferSize, SensorId id) const;
     SensorValue getSensorValueCurrentUnit(SensorId id) const;
 
+    inline static int make_positive(int x)
+    {
+        return (x < 0) ? -x : x;
+    }
+
     inline static int fast_round_positive(float x)
     {
         return static_cast<int>(x + 0.5f);
