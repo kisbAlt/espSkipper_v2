@@ -19,6 +19,11 @@ bool Settings::isSensorDisabled(SensorId id) const
     return disabledSensors[static_cast<size_t>(id)];
 }
 
+const SettingValue &Settings::getValueVariant(std::size_t index) const
+{
+    return currentValues[index];
+}
+
 const SettingDef &Settings::getSettingDef(SettingsKey key) const
 {
     std::size_t idx = getIndex(key);
@@ -99,6 +104,67 @@ bool Settings::isSensorEnabled(SensorId id) const
     if (id < SensorId::MAX_SENSORS)
         return !disabledSensors[static_cast<size_t>(id)];
     return false;
+}
+
+void Settings::saveToNVS(SettingsKey key, const SettingValue &value)
+{
+    Serial.println("Saving NVS");
+
+    const char *nvsKey = getSettingNvsKey(key);
+
+    if (const bool *v = std::get_if<bool>(&value))
+        preferences.putBool(nvsKey, *v);
+    else if (const int *v = std::get_if<int>(&value))
+    {
+        preferences.putInt(nvsKey, *v);
+        Serial.println("saving int");
+        Serial.println(getValue<int>(key));
+    }
+
+    else if (const float *v = std::get_if<float>(&value))
+        preferences.putFloat(nvsKey, *v);
+    else if (const uint8_t *v = std::get_if<uint8_t>(&value))
+        preferences.putUChar(nvsKey, *v);
+}
+
+void Settings::loadFromNVS()
+{
+    Serial.println("loading NVS");
+    preferences.begin("settings", false);
+
+    for (std::size_t i = 0; i < Count; ++i)
+    {
+        const char *nvsKey = getSettingNvsKey(Schema[i].key);
+        const SettingValue &def = Schema[i].defaultValue;
+
+        if (const bool *d = std::get_if<bool>(&def))
+            currentValues[i] = preferences.getBool(nvsKey, *d);
+        else if (const int *d = std::get_if<int>(&def))
+        {
+            currentValues[i] = preferences.getInt(nvsKey, *d);
+            Serial.println("loaded int");
+            Serial.println(getValue<int>(i));
+        }
+
+        else if (const float *d = std::get_if<float>(&def))
+            currentValues[i] = preferences.getFloat(nvsKey, *d);
+        else if (const uint8_t *d = std::get_if<uint8_t>(&def))
+            currentValues[i] = preferences.getUChar(nvsKey, *d);
+    }
+
+    for (std::size_t i = 0; i < static_cast<std::size_t>(SensorId::MAX_SENSORS); ++i)
+    {
+        SensorId id = static_cast<SensorId>(i);
+        const bool defaultDisabled = id == SensorId::MinGpsSpeed ||
+                                        id == SensorId::TiltPitchAvg ||
+                                        id == SensorId::TiltRollAvg ||
+                                        id == SensorId::DateTimeHour ||
+                                        id == SensorId::DateTimeMinute ||
+                                        id == SensorId::DateTimeYear ||
+                                        id == SensorId::DateTimeMonth ||
+                                        id == SensorId::DateTimeDay;
+        disabledSensors[i] = preferences.getBool(getSensorNvsKey(id), defaultDisabled);
+    }
 }
 
 const char *Settings::getSettingNvsKey(SettingsKey key) const
