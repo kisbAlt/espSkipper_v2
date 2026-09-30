@@ -17,6 +17,7 @@
     X(DegreesLong,    "degrees",    "fok") \
     X(DegreesShort,   "deg",         "fok") \
     X(BlankUnit,      "",           "")  \
+    X(Settings, "Settings", "Beallitasok") \
     X(SettingOn, "On", "Be") \
     X(SettingOff, "Off", "Ki") \
     X(SettingBtnBrightness, "Button Brightness", "Gomb Fenyero") \
@@ -39,6 +40,7 @@
     X(SensorTiltRollMax, "Roll Max", "Doles Max") \
     X(SensorTiltRollAvg, "Roll Avg", "Doles atl") \
     X(SensorDepth, "Water Depth", "Vizmelyseg") \
+    X(SensorWind, "Wind", "Szel") \
     X(SensorWindDirection, "Wind Direction", "Szelirany") \
     X(SensorWindDirectionAWA, "AWA", "AWA") \
     X(SensorWindSpeed, "TWS", "TWS") \

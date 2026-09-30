@@ -140,7 +140,7 @@ void DisplayHandler::DrawLayout()
     case DisplayLayout::WindPage:
     {
 
-        DisplayUtils::DrawTextCentered(lcd, 15, "Wind", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+        DisplayUtils::DrawTextCentered(lcd, 15, Translator::get(TextKey::SensorWind), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
 
         char valueStr[32];
         convertValueToString(valueStr, sizeof(valueStr), dataModel.getSensorValueCurrentUnit(SensorId::WindSpeedAWS), SensorId::WindSpeedAWS);
@@ -177,7 +177,7 @@ void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
     lastUpdate = millis();
     lcd.clear(COLOR_NEUTRAL);
 
-    DisplayUtils::DrawTextCentered(lcd, 15, "Settings", COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+    DisplayUtils::DrawTextCentered(lcd, 15, Translator::get(TextKey::Settings), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
     int y_pos = 40;
     const int fitItemCount = 12;
     switch (status.mode)
