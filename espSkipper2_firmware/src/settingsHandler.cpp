@@ -1,5 +1,6 @@
 #include "settingsHandler.hpp"
 #include "stringTranslator.hpp"
+#include <cstdio>
 
 Settings::Settings()
 {
@@ -8,14 +9,6 @@ Settings::Settings()
 void Settings::begin()
 {
     loadFromNVS();
-    disableSensor(SensorId::MinGpsSpeed);
-    disableSensor(SensorId::TiltPitchAvg);
-    disableSensor(SensorId::TiltRollAvg);
-    disableSensor(SensorId::DateTimeHour);
-    disableSensor(SensorId::DateTimeMinute);
-    disableSensor(SensorId::DateTimeYear);
-    disableSensor(SensorId::DateTimeMonth);
-    disableSensor(SensorId::DateTimeDay);
     Translator::setLanguage(getValue<uint8_t>(SettingsKey::Language));
 }
 
@@ -84,13 +77,21 @@ void Settings::setPreviousValue(size_t index)
 void Settings::disableSensor(SensorId id)
 {
     if (id < SensorId::MAX_SENSORS)
+    {
         disabledSensors[static_cast<size_t>(id)] = true;
+        preferences.putBool(getSensorNvsKey(id), disabledSensors[static_cast<size_t>(id)]);
+    }
+        
 }
 
 void Settings::enableSensor(SensorId id)
 {
     if (id < SensorId::MAX_SENSORS)
+    {
         disabledSensors[static_cast<size_t>(id)] = false;
+        preferences.putBool(getSensorNvsKey(id), disabledSensors[static_cast<size_t>(id)]);
+    }
+       
 }
 
 bool Settings::isSensorEnabled(SensorId id) const
@@ -98,6 +99,20 @@ bool Settings::isSensorEnabled(SensorId id) const
     if (id < SensorId::MAX_SENSORS)
         return !disabledSensors[static_cast<size_t>(id)];
     return false;
+}
+
+const char *Settings::getSettingNvsKey(SettingsKey key) const
+{
+    static char nvsKey[16];
+    snprintf(nvsKey, sizeof(nvsKey), "sk_%u", static_cast<unsigned>(key));
+    return nvsKey;
+}
+
+const char *Settings::getSensorNvsKey(SensorId id) const
+{
+    static char nvsKey[16];
+    snprintf(nvsKey, sizeof(nvsKey), "sensor_%u", static_cast<unsigned>(id));
+    return nvsKey;
 }
 
 const char *SettingDef::GetTitleString() const

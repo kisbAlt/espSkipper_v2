@@ -178,21 +178,22 @@ private:
     void saveToNVS(SettingsKey key, const SettingValue &value)
     {
         Serial.println("Saving NVS");
-        String nvsKey = "sk_" + String(static_cast<int>(key));
+
+        const char *nvsKey = getSettingNvsKey(key);
 
         if (const bool *v = std::get_if<bool>(&value))
-            preferences.putBool(nvsKey.c_str(), *v);
+            preferences.putBool(nvsKey, *v);
         else if (const int *v = std::get_if<int>(&value))
         {
-            preferences.putInt(nvsKey.c_str(), *v);
+            preferences.putInt(nvsKey, *v);
             Serial.println("saving int");
             Serial.println(getValue<int>(key));
         }
 
         else if (const float *v = std::get_if<float>(&value))
-            preferences.putFloat(nvsKey.c_str(), *v);
+            preferences.putFloat(nvsKey, *v);
         else if (const uint8_t *v = std::get_if<uint8_t>(&value))
-            preferences.putUChar(nvsKey.c_str(), *v);
+            preferences.putUChar(nvsKey, *v);
     }
 
     void loadFromNVS()
@@ -202,22 +203,39 @@ private:
 
         for (std::size_t i = 0; i < Count; ++i)
         {
-            String nvsKey = "sk_" + String(static_cast<int>(Schema[i].key));
+            const char *nvsKey = getSettingNvsKey(Schema[i].key);
             const SettingValue &def = Schema[i].defaultValue;
 
             if (const bool *d = std::get_if<bool>(&def))
-                currentValues[i] = preferences.getBool(nvsKey.c_str(), *d);
+                currentValues[i] = preferences.getBool(nvsKey, *d);
             else if (const int *d = std::get_if<int>(&def))
             {
-                currentValues[i] = preferences.getInt(nvsKey.c_str(), *d);
+                currentValues[i] = preferences.getInt(nvsKey, *d);
                 Serial.println("loaded int");
                 Serial.println(getValue<int>(i));
             }
 
             else if (const float *d = std::get_if<float>(&def))
-                currentValues[i] = preferences.getFloat(nvsKey.c_str(), *d);
+                currentValues[i] = preferences.getFloat(nvsKey, *d);
             else if (const uint8_t *d = std::get_if<uint8_t>(&def))
-                currentValues[i] = preferences.getUChar(nvsKey.c_str(), *d);
+                currentValues[i] = preferences.getUChar(nvsKey, *d);
+        }
+
+        for (std::size_t i = 0; i < static_cast<std::size_t>(SensorId::MAX_SENSORS); ++i)
+        {
+            SensorId id = static_cast<SensorId>(i);
+            const bool defaultDisabled = id == SensorId::MinGpsSpeed ||
+                                          id == SensorId::TiltPitchAvg ||
+                                          id == SensorId::TiltRollAvg ||
+                                          id == SensorId::DateTimeHour ||
+                                          id == SensorId::DateTimeMinute ||
+                                          id == SensorId::DateTimeYear ||
+                                          id == SensorId::DateTimeMonth ||
+                                          id == SensorId::DateTimeDay;
+            disabledSensors[i] = preferences.getBool(getSensorNvsKey(id), defaultDisabled);
         }
     }
+
+    const char *getSettingNvsKey(SettingsKey key) const;
+    const char *getSensorNvsKey(SensorId id) const;
 };
