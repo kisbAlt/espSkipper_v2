@@ -1,6 +1,7 @@
 #pragma once
 #include "Osptek_BWR_42.h"
 #include "fonts.hpp"
+#define DISPLAY_WIDTH 300
 
 class DisplayUtils
 {

@@ -11,7 +11,6 @@ SettingsDisplay::SettingsDisplay(Settings &settings, DisplayHandler &displayHand
 
 void SettingsDisplay::handleButtonPress(ButtonEvent btnEvent, ButtonName btnName)
 {
-    // Safely write the button data
     if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE)
     {
         lastButtonEvent = btnEvent;
@@ -19,7 +18,6 @@ void SettingsDisplay::handleButtonPress(ButtonEvent btnEvent, ButtonName btnName
         xSemaphoreGive(dataMutex);
     }
 
-    // Wake up the display thread! (Equivalent to cv.notify_one)
     xSemaphoreGive(wakeupSemaphore);
 }
 

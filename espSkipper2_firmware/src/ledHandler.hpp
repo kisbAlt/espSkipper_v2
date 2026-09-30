@@ -11,14 +11,8 @@ public:
     // Constructor takes the GPIO pin number
     LedHandler(uint8_t pin, IsLedEnabledCallback isLedEnabled, GetLedBrightnessCallback getLedBrightness, uint8_t pwmChannel = 0);
 
-    
-    // Initializes the pin
     void begin();
-    
-    // Non-blocking blink functionality
     void blink(uint32_t intervalMillis);
-    
-    // Must be called in the loop if using the blink feature
     void update();
     void reload();
 

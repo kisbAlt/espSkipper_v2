@@ -13,18 +13,15 @@ void ButtonHandler::begin() {
 void ButtonHandler::process() {
     unsigned long now = millis();
 
-    // 1. Shift current reading into history (active-low)
     _history = (_history << 1) | digitalRead(_pin);
 
-    // 2. Detect stable state transitions using a BITMASK
-    // We only care about the newest 4 bits (4 samples * 5ms = 20ms debounce).
-    // 0x00 means the newest 4 readings were all LOW.
+    // read last 4 bits with bitmask (4 samples * 5ms = 20ms debounce).
     if (!_isDown && (_history & 0x0F) == 0x00) {
         _isDown = true;
         _pressStartTime = now;
         _longPressTriggered = false;
     }
-    // 0x0F (binary 00001111) means the newest 4 readings were all HIGH.
+    // 0x0F (binary 00001111) => newest 4 readings were all HIGH
     else if (_isDown && (_history & 0x0F) == 0x0F) {
         _isDown = false;
         _lastReleaseTime = now;
@@ -34,7 +31,7 @@ void ButtonHandler::process() {
         }
     }
 
-    // 3. Handle Long Press (fires while button is still held down)
+    // handle long press
     if (_isDown && !_longPressTriggered) {
         if (now - _pressStartTime >= LONG_PRESS_MS) {
             _longPressTriggered = true;
@@ -43,7 +40,7 @@ void ButtonHandler::process() {
         }
     }
 
-    // 4. Handle Click Resolution
+    // handle clicks
     if (!_isDown && _clickCount > 0) {
         if (now - _lastReleaseTime >= MULTI_CLICK_MS) {
             if (_clickCount == 1) {

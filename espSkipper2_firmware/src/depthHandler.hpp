@@ -8,10 +8,8 @@ class DepthHandler
 private:
     const Settings &settings;
     InstrumentDataModel &dataModel;
-    //static void uartTaskRoute(void* pvParameters); // FreeRTOS Task
 
 public:
-    //void startBackgroundTask();
     DepthHandler(const Settings &settings, InstrumentDataModel &dataModel);
     bool ReadPacket();
     void begin();

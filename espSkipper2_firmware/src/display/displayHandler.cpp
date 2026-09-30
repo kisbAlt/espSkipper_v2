@@ -4,39 +4,14 @@
 #include "fonts.hpp"
 #include "Osptek_BWR_42.h"
 #include "displayUtils.hpp"
-// #include "SparkFunLIS3DH.h"
 #include "Wire.h"
 #include "SPI.h"
 #include "fonts.hpp"
 #include "settingsHandler.hpp"
 #include "bitmaps.h"
 
-// Shape 1 (Red Box) Variables
-int boxSize = 40;
-int boxX = 50, boxY = 220; // Adjusted to start in the lower section
-int boxDx = 5, boxDy = 6;
-
-// Shape 2 (Black Circle) Variables
-int radius = 25;
-int circleX = 200, circleY = 300;
-int circleDx = -7, circleDy = -5;
-
 uint updateCounter = 0;
 unsigned long lastUpdate = 0;
-
-int countDigits4(int x)
-{
-    int n = (x < 0) ? -x : x;
-
-    if (n < 100)
-    {
-        return (n < 10) ? 1 : 2;
-    }
-    else
-    {
-        return (n < 1000) ? 3 : 4;
-    }
-}
 
 void DisplayHandler::convertValueToString(char *valueStr, int len, SensorValue value, SensorId id)
 {
@@ -73,7 +48,8 @@ int DisplayHandler::currentSensorDrawn() const
 }
 
 DisplayHandler::DisplayHandler(InstrumentDataModel &dataModel, const Settings &settings) : dataModel(dataModel), settings(settings),
-                                                                                           lcd(LCD_CS, LCD_DC, LCD_RES, -1, -1), currentLayout(DisplayLayout::ThreeColTwoRow)
+                                                                                           lcd(LCD_CS, LCD_DC, LCD_RES, -1, -1), 
+                                                                                           currentLayout(DisplayLayout::ThreeColTwoRow)
 {
 }
 
@@ -124,7 +100,6 @@ void DisplayHandler::DrawLayout()
             DisplayUtils::DrawTextCentered(lcd, 180, dateStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
         }
 
-        // Call the method and provide the display logic as the callback
         int lowerDataCount = 0;
         dataModel.drawActiveSensors([&](int index, const TextKey titleKey, SensorValue value, const char *unitText, SensorId id)
                                     {
@@ -145,11 +120,9 @@ void DisplayHandler::DrawLayout()
                                             if(pageIndex * (currentSensorDrawn() - 1) + adjustment > index) {
                                                 return; // Skip drawing this sensor if it's not on the current page
                                             }
-                                            // Calculate the row (0 to 2) and column (0 to 1) based on the index
                                             int row = lowerDataCount / 2;
                                             int col = lowerDataCount % 2;
 
-                                            // Calculate the top-left X and Y coordinates for the current cell
                                             int cellX = (col * 149) + 5;
                                             int cellY = 200 + (row * 66) + 5;
 

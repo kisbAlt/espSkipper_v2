@@ -24,27 +24,26 @@ GpsHandler::GpsHandler(InstrumentDataModel& dataModel) : dataModel(dataModel)
 
 void GpsHandler::init()
 {
-    // Force GPS module on if required by your hardware
     pinMode(FORCE_ON_PIN, OUTPUT);
     digitalWrite(FORCE_ON_PIN, HIGH); 
     delay(2000);
 
-    // 1. Start Serial 1 with the slow default baud rate
+    // start serial with default baud rate
     gpsSerial.begin(GPS_BAUD_SLOW, SERIAL_8N1, RX_PIN, TX_PIN);
     delay(2000);
 
-    // 2. Send command to change GPS baud rate to 115200
+    // command to increase baud to 115200
     gpsSerial.println("$PMTK251,115200*1F");
     delay(500);
 
-    // 3. Reinitialize Arduino serial to the new fast baud rate
+    // reinitialize serial with new baud rate
     gpsSerial.end();
     delay(500);
 
     gpsSerial.setRxBufferSize(GPS_BUFFER);
     gpsSerial.begin(GPS_BAUD, SERIAL_8N1, RX_PIN, TX_PIN);
 
-    // 4. Send additional MTK commands
+    // enable all NMEA sentences and set update rate to 1hz
     gpsSerial.println("$PMTK225,0*2B");
     delay(100);
     gpsSerial.println("$PMTK353,1,1,1,0,0*2A");
@@ -54,17 +53,11 @@ void GpsHandler::init()
 
 void GpsHandler::updateGpsData()
 {
-    // Feed the GPS parser with incoming serial data
     while (gpsSerial.available() > 0) {
         char c = gpsSerial.read();
-        
-        // This will print the raw data coming from the GPS
-        //Serial.print(c); 
-        
         gps.encode(c);
     }
 
-    // Print data only when a new location packet is successfully parsed
     if (gps.location.isUpdated()) {
         Serial.println("--- GPS Data Updated ---");
 
@@ -72,7 +65,7 @@ void GpsHandler::updateGpsData()
         Serial.println(gps.satellites.value());
 
         Serial.print("Latitude:   ");
-        Serial.println(gps.location.lat(), 6); // Print to 6 decimal places
+        Serial.println(gps.location.lat(), 6);
 
         Serial.print("Longitude:  ");
         Serial.println(gps.location.lng(), 6);
@@ -97,14 +90,6 @@ void GpsHandler::updateGpsData()
         dataModel.updateSensor(SensorId::DateTimeDay, (int)gps.date.day());
         dataModel.updateSensor(SensorId::DateTimeMonth, (int)gps.date.month());
         dataModel.updateSensor(SensorId::DateTimeYear, (int)gps.date.year());
-        // Serial.print("hour:      ");
-        // Serial.println((int)gps.time.hour());
-        // Serial.print("minute:    ");
-        // Serial.println((int)gps.time.minute());
-
-        // Serial.println(" km/h");
-
-        // Serial.println("------------------------\n");
     }
 }
 

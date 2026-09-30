@@ -1,3 +1,6 @@
+# ifndef PINOUT_HPP
+# define PINOUT_HPP
+
 #define SPI_SCK   12 // Shared with Display
 #define SPI_MISO  13 // Used by LIS3DH
 #define SPI_MOSI  11 // Shared with Display
@@ -11,3 +14,5 @@
 #define LCD_CS 5
 #define LCD_DC 9
 #define LCD_RES 4
+
+# endif

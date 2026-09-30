@@ -58,7 +58,7 @@ public:
     template <typename Callback>
     void drawActiveSensors(Callback cb) const
     {
-        int displayIndex = 0; // Tracks consecutive 0, 1, 2, 3 for your grid math
+        int displayIndex = 0;
 
         for (size_t i = 0; i < m_data.size(); ++i)
         {

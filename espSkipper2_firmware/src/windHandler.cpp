@@ -60,17 +60,9 @@ void WindHandler::init()
     dataModel.addSensor(SensorId::WindDirectionAWA, int(0), SensorUnit(SensorUnitEnum::Degrees), TextKey::SensorWindDirectionAWA);
 
 
-// NEW LINE: Anchor the RX pin HIGH while the SP3485 is in transmit mode
-    // to prevent floating phantom bytes from blinding the UART.
     pinMode(RX_PIN, INPUT_PULLUP);
-
-    // Initialize RS485 Serial port on ESP32-S3
     windSerial.begin(9600, SERIAL_8N1, RX_PIN, TX_PIN);
-
-    // Tell the ESP32 hardware to take control of the RTS pin
     windSerial.setPins(RX_PIN, TX_PIN, -1, RTS_PIN); 
-    
-    // Enable automatic hardware toggling for RS485
     windSerial.setMode(UART_MODE_RS485_HALF_DUPLEX);
 
     currentState = WIND_IDLE;
@@ -88,16 +80,12 @@ void WindHandler::updateWindData()
         case WIND_IDLE:
             if (currentMillis - lastRequestTime >= 1000)
             {
-                // Clear out any garbage in the buffer
                 while (windSerial.available()) {
                     windSerial.read();
                 }
 
-                // Send the command - The ESP32 hardware automatically pulls RTS HIGH, 
-                // sends the bits, and instantly pulls RTS LOW the nanosecond it finishes!
                 windSerial.write(windSensorReq, sizeof(windSensorReq));
 
-                // Move to waiting state and reset counters
                 currentState = WIND_WAITING_RX;
                 lastRequestTime = currentMillis; 
                 bytesRead = 0;
@@ -111,23 +99,16 @@ void WindHandler::updateWindData()
                 bytesRead++;
             }
 
-            // Check if we received the full frame OR the 8-byte clipped frame
             if (bytesRead == EXPECTED_RESPONSE_LEN || (bytesRead == EXPECTED_RESPONSE_LEN - 1 && responseBuffer[0] == 0x03))
             {
-                // RECOVERY MODE: If we got 8 bytes starting with 0x03, the SP3485 hardware 
-                // clipped the first byte (0x01) because the sensor responded too quickly.
                 if (bytesRead == EXPECTED_RESPONSE_LEN - 1)
                 {
-                    // Shift all bytes one position to the right to make room
                     for (int i = bytesRead; i > 0; i--) {
                         responseBuffer[i] = responseBuffer[i - 1];
                     }
-                    // Re-insert the missing device address at the beginning
                     responseBuffer[0] = 0x01;
-                    // We now have a full 9-byte frame
                 }
 
-                // Verify it's the correct device and function code
                 if (responseBuffer[0] == 0x01 && responseBuffer[1] == 0x03)
                 {
                     uint16_t calculatedCRC = calculateCRC(responseBuffer, 7);
@@ -158,7 +139,7 @@ void WindHandler::updateWindData()
                 
                 currentState = WIND_IDLE; 
             }
-            // Check for timeout (500ms has passed since we asked for data)
+            
             else if (currentMillis - lastRequestTime >= 500)
             {
                 if (bytesRead > 0) {

@@ -31,14 +31,12 @@ private:
     uint8_t _history;
     bool _isDown;
     
-    // Timing & State tracking
     unsigned long _pressStartTime;
     unsigned long _lastReleaseTime;
     
     uint8_t _clickCount;
     bool _longPressTriggered;
 
-    // Timing thresholds (in ms)
     const unsigned long LONG_PRESS_MS   = 600;
     const unsigned long MULTI_CLICK_MS  = 300;
 

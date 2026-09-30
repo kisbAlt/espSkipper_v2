@@ -59,7 +59,6 @@ void reloadAll() {
     Translator::setLanguage(settings.getValue<uint8_t>(SettingsKey::Language));
 }
 
-// 1. Define the task that will run on Core 0
 void sensorDisplayTask(void *pvParameters)
 {
     //displayHandler.ResetDisplay();
@@ -173,25 +172,25 @@ void setup()
                      { handleButtonEvent(ButtonName::BUTTON3, ButtonEvent::LONG_PRESS); });
     btn3.onSingleClick([]()
                        { handleButtonEvent(ButtonName::BUTTON3, ButtonEvent::SINGLE_CLICK); });
-    // 2. Launch the sensor task and pin it to Core 0
+    
     xTaskCreatePinnedToCore(
-        sensorDisplayTask, // The function we just wrote above
-        "SensorTask",      // A name for debugging
-        8192,              // Stack size (8KB is generous, good for displays/GPS)
-        NULL,              // Task input parameter (not needed here)
-        1,                 // Task priority (1 is standard)
-        &SensorTaskHandle, // Task handle
-        0                  // Pin this specific task to Core 0
+        sensorDisplayTask,
+        "SensorTask",
+        8192,
+        NULL,
+        1,
+        &SensorTaskHandle,
+        0
     );
 
     xTaskCreatePinnedToCore(
-        globalButtonTask,    // Function to implement the task
-        "ButtonManager",     // Name of the task
-        2048,                // Stack size in words
-        NULL,                // Task input parameter
-        2,                   // Priority (Priority 2 > Priority 1 of SensorTask)
-        NULL,                // Task handle
-        1                    // Pin explicitly to Core 1
+        globalButtonTask,
+        "ButtonManager",
+        2048,
+        NULL,
+        2,
+        NULL,
+        1
     );
 
     btnLed.begin();

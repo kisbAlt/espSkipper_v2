@@ -41,12 +41,11 @@ void AccelerometerHandler::readAccelerometerData()
     const float raw_y = SensorOne.readFloatAccelY();
     const float raw_z = SensorOne.readFloatAccelZ();
 
-    // Swapping Y and Z because gravity is acting on the physical Y-axis
+    // swapping Y and Z for PCB position
     const float virt_x = raw_x;  
-    const float virt_y = -raw_z; // The negative sign keeps the rotation direction standard
-    const float virt_z = raw_y;  // Change to -raw_y if your angles are perfectly upside down
+    const float virt_y = -raw_z; // keep the rotation direction standard
+    const float virt_z = raw_y;
 
-    // Now do the math using the virtual axes
     const float lastRoll = atan2(-virt_x, sqrt((virt_y * virt_y) + (virt_z * virt_z))) * (180.0 / PI);
     const float lastPitch  = atan2(virt_y, virt_z) * (180.0 / PI);
 
@@ -61,13 +60,6 @@ void AccelerometerHandler::readAccelerometerData()
     dataModel.updateSensor(SensorId::TiltRollAvg, rollRounded);
     dataModel.updateSensorIfSmaller(SensorId::TiltRollMin, rollRounded);
     dataModel.updateSensorIfLarger(SensorId::TiltRollMax, rollRounded);
-
-    // Serial.print("\nAccelerometer:\n");
-
-    // Serial.print(" lastPitch = ");
-    // Serial.println(lastPitch);
-    // Serial.print(" lastRoll = ");
-    // Serial.println(lastRoll);
 }
 
 void AccelerometerHandler::reload()

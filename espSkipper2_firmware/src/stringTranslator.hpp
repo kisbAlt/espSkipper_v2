@@ -1,6 +1,5 @@
 #pragma once
 
-// 1. Define the Master Table
 #define TRANSLATION_TABLE(X) \
     X(Empty,          "",          "") \
     X(Kmph,           "km/h",       "km/h") \
@@ -59,15 +58,13 @@
     X(LanguageHungarianShort, "HU", "HU") \
     X(LanguageEnglishShort, "EN", "EN") \
 
-// 2. Generate the Enum
 #define GENERATE_ENUM(KEY, EN, HU) KEY,
 enum class TextKey {
     TRANSLATION_TABLE(GENERATE_ENUM)
     Count
 };
-#undef GENERATE_ENUM // Clean up macro to prevent pollution
+#undef GENERATE_ENUM
 
-// 3. Declare the Class
 class Translator {
 private:
     static int currentLang;

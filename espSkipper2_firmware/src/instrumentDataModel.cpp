@@ -230,13 +230,12 @@ SensorValue InstrumentDataModel::SensorRecord::GetValueInUnit(SensorUnitEnum tar
                       {
         using T = std::decay_t<decltype(arg)>;
         
-        // Only attempt mathematical conversion on numerical types
         if constexpr (std::is_same_v<T, float> || std::is_same_v<T, int>) {
             
             float val = static_cast<float>(arg);
             float convertedVal = val;
 
-            // --- SPEED CONVERSIONS (Base unit: Mps) ---
+            // base unit => mps
             if (unit.GetUnitType() == UnitType::Speed) {
                 float mps = val;
                 
@@ -254,11 +253,10 @@ SensorValue InstrumentDataModel::SensorRecord::GetValueInUnit(SensorUnitEnum tar
                     default: break;
                 }
             }
-            // --- DISTANCE CONVERSIONS (Base unit: Meter) ---
+            // base unit => meters
             else if (unit.GetUnitType() == UnitType::Distance) {
                 float meters = val;
-                
-                // Convert current unit to base unit (Meter)
+
                 switch (unit.GetUnitEnum()) {
                     case SensorUnitEnum::Kilometer: meters = val * 1000.0f; break;
                     case SensorUnitEnum::Feet:      meters = val * 0.3048f; break;
@@ -266,7 +264,6 @@ SensorValue InstrumentDataModel::SensorRecord::GetValueInUnit(SensorUnitEnum tar
                     default: break;
                 }
                 
-                // Convert base unit (Meter) to target unit
                 switch (targetUnitEnum) {
                     case SensorUnitEnum::Kilometer: convertedVal = meters / 1000.0f; break;
                     case SensorUnitEnum::Feet:      convertedVal = meters / 0.3048f; break;
