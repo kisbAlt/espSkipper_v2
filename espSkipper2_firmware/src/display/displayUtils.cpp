@@ -74,10 +74,10 @@ int16_t DisplayUtils::DrawCharGFX(OsptekBWR &lcd, int16_t x, int16_t y, unsigned
 
 void DisplayUtils::DrawStringGFX(OsptekBWR &lcd, int16_t x, int16_t y, const char *str, const OspColor color, const OspColor bg, const GFXfont *gfxFont, uint8_t size) 
 {
-    int16_t cursor_x = x;
+    int16_t cursorX = x;
     while (*str) {
         // draw the character and advance the cursor by its specific width
-        cursor_x += DrawCharGFX(lcd, cursor_x, y, *str, color, bg, gfxFont, size);
+        cursorX += DrawCharGFX(lcd, cursorX, y, *str, color, bg, gfxFont, size);
         str++;
     }
 }

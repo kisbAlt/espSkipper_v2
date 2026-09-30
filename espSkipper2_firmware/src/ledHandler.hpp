@@ -11,17 +11,17 @@ public:
 
     LedHandler(uint8_t pin, IsLedEnabledCallback isLedEnabled, GetLedBrightnessCallback getLedBrightness, uint8_t pwmChannel = 0);
 
-    void begin();
-    void blink(uint32_t intervalMillis);
-    void update();
-    void reload();
+    void Begin();
+    void Blink(uint32_t intervalMillis);
+    void Update();
+    void Reload();
 
 private:
-    uint8_t _pin;
-    uint8_t _pwmChannel;
-    bool _isBlinking;
-    uint32_t _blinkInterval;
-    unsigned long _lastBlinkTime;
+    uint8_t pin;
+    uint8_t pwmChannel;
+    bool isBlinking;
+    uint32_t blinkInterval;
+    unsigned long lastBlinkTime;
     IsLedEnabledCallback isLedEnabled;
     GetLedBrightnessCallback getLedBrightness;
 };

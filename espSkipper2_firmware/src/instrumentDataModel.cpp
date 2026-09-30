@@ -2,47 +2,33 @@
 #include "stringTranslator.hpp"
 #include "instrumentDataFormats.hpp"
 
-SensorUnitEnum InstrumentDataModel::getCurrentUnitForSensor(SensorId id) const
+SensorUnitEnum InstrumentDataModel::GetCurrentUnitForSensor(SensorId id) const
 {
     SensorUnitEnum settingsUnit;
-    switch (m_data[static_cast<size_t>(id)].unit.GetUnitType())
+    switch (data[static_cast<size_t>(id)].unit.GetUnitType())
     {
         case UnitType::Speed:
-            settingsUnit = static_cast<SensorUnitEnum>(m_settings.getValue<uint8_t>(SettingsKey::SpeedUnit));
+            settingsUnit = static_cast<SensorUnitEnum>(settings.GetValue<uint8_t>(SettingsKey::SpeedUnit));
             break;
         case UnitType::Distance:
-            settingsUnit = static_cast<SensorUnitEnum>(m_settings.getValue<uint8_t>(SettingsKey::DistanceUnit));
+            settingsUnit = static_cast<SensorUnitEnum>(settings.GetValue<uint8_t>(SettingsKey::DistanceUnit));
             break;
         default:
-            settingsUnit = m_data[static_cast<size_t>(id)].unit.GetUnitEnum();
+            settingsUnit = data[static_cast<size_t>(id)].unit.GetUnitEnum();
     }
     return settingsUnit;
 }
 
-InstrumentDataModel::InstrumentDataModel(const Settings &settings) : m_settings(settings)
+InstrumentDataModel::InstrumentDataModel(const Settings &settings) : settings(settings)
 {
 }
 
-void InstrumentDataModel::updateSensor(SensorId id, SensorValue val)
+void InstrumentDataModel::UpdateSensor(SensorId id, SensorValue val)
 {
-    m_data[static_cast<size_t>(id)].UpdateValue(val);
+    data[static_cast<size_t>(id)].UpdateValue(val);
 }
 
-void InstrumentDataModel::updateSensorIfLarger(SensorId id, SensorValue val)
-{
-    std::visit([&val, this, id](auto &currentVal)
-               {
-        using T = std::decay_t<decltype(currentVal)>;
-        
-        if constexpr (std::is_arithmetic_v<T>) {
-            const T newVal = std::get<T>(val);
-            if(!m_data[static_cast<size_t>(id)].hasData ||static_cast<T>(currentVal < newVal)) {
-                m_data[static_cast<size_t>(id)].UpdateValue(newVal);
-            }
-        } }, m_data[static_cast<size_t>(id)].value);
-}
-
-void InstrumentDataModel::updateSensorIfSmaller(SensorId id, SensorValue val)
+void InstrumentDataModel::UpdateSensorIfLarger(SensorId id, SensorValue val)
 {
     std::visit([&val, this, id](auto &currentVal)
                {
@@ -50,69 +36,82 @@ void InstrumentDataModel::updateSensorIfSmaller(SensorId id, SensorValue val)
         
         if constexpr (std::is_arithmetic_v<T>) {
             const T newVal = std::get<T>(val);
-            if(!m_data[static_cast<size_t>(id)].hasData || static_cast<T>(currentVal > newVal)) {
-                m_data[static_cast<size_t>(id)].UpdateValue(newVal);
+            if(!data[static_cast<size_t>(id)].hasData ||static_cast<T>(currentVal < newVal)) {
+                data[static_cast<size_t>(id)].UpdateValue(newVal);
             }
-        } }, m_data[static_cast<size_t>(id)].value);
+        } }, data[static_cast<size_t>(id)].value);
 }
 
-void InstrumentDataModel::addSensor(SensorId id, SensorValue val, SensorUnit unit, TextKey titleKey, bool isAverage)
+void InstrumentDataModel::UpdateSensorIfSmaller(SensorId id, SensorValue val)
 {
-    m_data[static_cast<size_t>(id)] = {id, val, titleKey, unit, isAverage};
-    count++;
+    std::visit([&val, this, id](auto &currentVal)
+               {
+        using T = std::decay_t<decltype(currentVal)>;
+        
+        if constexpr (std::is_arithmetic_v<T>) {
+            const T newVal = std::get<T>(val);
+            if(!data[static_cast<size_t>(id)].hasData || static_cast<T>(currentVal > newVal)) {
+                data[static_cast<size_t>(id)].UpdateValue(newVal);
+            }
+        } }, data[static_cast<size_t>(id)].value);
 }
 
-bool InstrumentDataModel::isSensorEnabled(SensorId id) const
+void InstrumentDataModel::AddSensor(SensorId id, SensorValue val, SensorUnit unit, TextKey titleKey, bool isAverage)
 {
-    return !m_settings.isSensorDisabled(id);
+    data[static_cast<size_t>(id)] = {id, val, titleKey, unit, isAverage};
 }
 
-bool InstrumentDataModel::sensorHaveData(SensorId id) const
+bool InstrumentDataModel::IsSensorEnabled(SensorId id) const
 {
-    return m_data[static_cast<size_t>(id)].hasData;
+    return !settings.IsSensorDisabled(id);
 }
 
-SensorValue InstrumentDataModel::getSensorValue(SensorId id) const
+bool InstrumentDataModel::SensorHasData(SensorId id) const
 {
-    return m_data[static_cast<size_t>(id)].value;
+    return data[static_cast<size_t>(id)].hasData;
 }
 
-SensorValue InstrumentDataModel::getSensorValueInUnit(SensorId id, SensorUnitEnum targetUnitEnum) const
+SensorValue InstrumentDataModel::GetSensorValue(SensorId id) const
 {
-    return m_data[static_cast<size_t>(id)].GetValueInUnit(targetUnitEnum);
+    return data[static_cast<size_t>(id)].value;
 }
 
-TextKey InstrumentDataModel::getSensorTitleKey(SensorId id) const
+SensorValue InstrumentDataModel::GetSensorValueInUnit(SensorId id, SensorUnitEnum targetUnitEnum) const
 {
-    return m_data[static_cast<size_t>(id)].titleKey;
+    return data[static_cast<size_t>(id)].GetValueInUnit(targetUnitEnum);
 }
 
-bool InstrumentDataModel::isSensorEnabledAndHaveData(SensorId id) const
+TextKey InstrumentDataModel::GetSensorTitleKey(SensorId id) const
 {
-    return isSensorEnabled(id) && sensorHaveData(id);
+    return data[static_cast<size_t>(id)].titleKey;
 }
 
-std::vector<std::pair<SensorId, SensorValue>> InstrumentDataModel::getDisplaySnapshot() const
+bool InstrumentDataModel::IsSensorEnabledAndHasData(SensorId id) const
+{
+    return IsSensorEnabled(id) && SensorHasData(id);
+}
+
+std::vector<std::pair<SensorId, SensorValue>> InstrumentDataModel::GetDisplaySnapshot() const
 {
     std::vector<std::pair<SensorId, SensorValue>> snapshot;
 
-    for (size_t i = 0; i < m_data.size(); ++i)
+    for (size_t i = 0; i < data.size(); ++i)
     {
-        if (m_data[i].hasData)
+        if (data[i].hasData)
         {
-            snapshot.push_back({static_cast<SensorId>(i), m_data[i].value});
+            snapshot.push_back({static_cast<SensorId>(i), data[i].value});
         }
     }
     return snapshot;
 }
 
-int InstrumentDataModel::getActiveSensorCount() const
+int InstrumentDataModel::GetActiveSensorCount() const
 {
     int count = 0;
     const int size = static_cast<int>(SensorId::MAX_SENSORS);
     for (size_t i = 0; i < static_cast<int>(SensorId::MAX_SENSORS); ++i)
     {
-        if (isSensorEnabledAndHaveData(static_cast<SensorId>(i)))
+        if (IsSensorEnabledAndHasData(static_cast<SensorId>(i)))
         {
             count++;
         }
@@ -120,21 +119,21 @@ int InstrumentDataModel::getActiveSensorCount() const
     return count;
 }
 
-void InstrumentDataModel::reload()
+void InstrumentDataModel::Reload()
 {
 }
 
-void InstrumentDataModel::writeCurrentUnitString(char *unitString, size_t bufferSize, SensorId id) const
+void InstrumentDataModel::WriteCurrentUnitString(char *unitString, size_t bufferSize, SensorId id) const
 {
-    SensorUnitEnum settingsUnit = getCurrentUnitForSensor(id);
+    SensorUnitEnum settingsUnit = GetCurrentUnitForSensor(id);
     strncpy(unitString, GetUnitString(settingsUnit), bufferSize - 1);
     unitString[bufferSize - 1] = '\0';
 }
 
-SensorValue InstrumentDataModel::getSensorValueCurrentUnit(SensorId id) const
+SensorValue InstrumentDataModel::GetSensorValueCurrentUnit(SensorId id) const
 {
-    SensorUnitEnum settingsUnit = getCurrentUnitForSensor(id);
-    return m_data[static_cast<size_t>(id)].GetValueInUnit(settingsUnit);
+    SensorUnitEnum settingsUnit = GetCurrentUnitForSensor(id);
+    return data[static_cast<size_t>(id)].GetValueInUnit(settingsUnit);
 }
 
 SensorUnit::SensorUnit() : sensorUnit(SensorUnitEnum::BlankUnit)

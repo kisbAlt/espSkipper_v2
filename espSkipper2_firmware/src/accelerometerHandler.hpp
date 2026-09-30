@@ -5,7 +5,7 @@ private:
     InstrumentDataModel& dataModel;
 public:
     AccelerometerHandler(InstrumentDataModel& dataModel);
-    void init();
-    void readAccelerometerData();
-    void reload();
+    void Init();
+    void ReadAccelerometerData();
+    void Reload();
 };

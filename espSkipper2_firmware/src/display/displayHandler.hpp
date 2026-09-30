@@ -2,7 +2,6 @@
 #include "pinout.hpp"
 #include "displayUtils.hpp"
 #include "instrumentDataModel.hpp"
-#include "instrumentDataModel.hpp"
 
 
 enum class UpdatePage {
@@ -28,7 +27,7 @@ private:
     {
         ThreeColTwoRow,
         WindPage,
-        MAX_LAYOUTs
+        MAX_LAYOUTS
     };
     enum class StringConvertType
     {
@@ -43,16 +42,16 @@ private:
     const Settings& settings;
 
     SensorId focusedSensor = SensorId::GpsSpeed;
-    void convertValueToString(char *valueStr, int len, SensorValue value, SensorId id);
-    int currentSensorDrawn() const;
+    void ConvertValueToString(char *valueStr, int len, SensorValue value, SensorId id);
+    int CurrentSensorDrawn() const;
     
 public:
     DisplayHandler(InstrumentDataModel &dataModel, const Settings& settings);
-    void init();
-    void updateDisplay();
+    void Init();
+    void UpdateDisplay();
     void DrawLayout();
-    void stepFocusedSensor();
-    void nextDisplayPage();
+    void StepFocusedSensor();
+    void NextDisplayPage();
     void ResetDisplay();
     void DrawSettingsPage(const SettingsDisplayStatus &status);
 };

@@ -1,5 +1,5 @@
 #include "windHandler.hpp"
-#include "StringTranslator.hpp"
+#include "stringTranslator.hpp"
 
 HardwareSerial windSerial(0); // UART0 for RS485 Wind Sensor
 
@@ -52,12 +52,12 @@ WindHandler::ApparentWind WindHandler::calculateApparentWind(const float gpsSpee
     return aw;
 }
 
-void WindHandler::init()
+void WindHandler::Init()
 {
-    dataModel.addSensor(SensorId::WindSpeed, 0.0f, SensorUnit(SensorUnitEnum::Mps), TextKey::SensorWindSpeed);
-    dataModel.addSensor(SensorId::WindSpeedAWS, 0.0f, SensorUnit(SensorUnitEnum::Mps), TextKey::SensorWindSpeedAWS);
-    dataModel.addSensor(SensorId::WindDirection, int(0), SensorUnit(SensorUnitEnum::Degrees), TextKey::SensorWindDirection);
-    dataModel.addSensor(SensorId::WindDirectionAWA, int(0), SensorUnit(SensorUnitEnum::Degrees), TextKey::SensorWindDirectionAWA);
+    dataModel.AddSensor(SensorId::WindSpeed, 0.0f, SensorUnit(SensorUnitEnum::Mps), TextKey::SensorWindSpeed);
+    dataModel.AddSensor(SensorId::WindSpeedAWS, 0.0f, SensorUnit(SensorUnitEnum::Mps), TextKey::SensorWindSpeedAWS);
+    dataModel.AddSensor(SensorId::WindDirection, int(0), SensorUnit(SensorUnitEnum::Degrees), TextKey::SensorWindDirection);
+    dataModel.AddSensor(SensorId::WindDirectionAWA, int(0), SensorUnit(SensorUnitEnum::Degrees), TextKey::SensorWindDirectionAWA);
 
 
     pinMode(WIND_RX_PIN, INPUT_PULLUP);
@@ -71,7 +71,7 @@ void WindHandler::init()
     Serial.println("Wind sensor Ready (Hardware RS485 Mode).");
 }
 
-void WindHandler::updateWindData()
+void WindHandler::UpdateWindData()
 {
     unsigned long currentMillis = millis();
 
@@ -121,15 +121,13 @@ void WindHandler::updateWindData()
 
                         uint16_t dirRaw = (responseBuffer[5] << 8) | responseBuffer[6];
                         int windDirection = dirRaw; 
-                        const float gpsSpeed = std::get<float>(dataModel.getSensorValueInUnit(SensorId::GpsSpeed, SensorUnitEnum::Mps));
+                        const float gpsSpeed = std::get<float>(dataModel.GetSensorValueInUnit(SensorId::GpsSpeed, SensorUnitEnum::Mps));
                         ApparentWind apparentWind = calculateApparentWind(gpsSpeed, windDirection, windSpeed);
                         
-                        dataModel.updateSensor(SensorId::WindSpeed, windSpeed);
-                        dataModel.updateSensor(SensorId::WindSpeedAWS, apparentWind.speed);
-                        SensorValueString dirStr;
-                        
-                        dataModel.updateSensor(SensorId::WindDirection, windDirection);
-                        dataModel.updateSensor(SensorId::WindDirectionAWA, apparentWind.angle);
+                        dataModel.UpdateSensor(SensorId::WindSpeed, windSpeed);
+                        dataModel.UpdateSensor(SensorId::WindSpeedAWS, apparentWind.speed);
+                        dataModel.UpdateSensor(SensorId::WindDirection, windDirection);
+                        dataModel.UpdateSensor(SensorId::WindDirectionAWA, apparentWind.angle);
                     }
                     else
                     {
@@ -158,6 +156,6 @@ void WindHandler::updateWindData()
     }
 }
 
-void WindHandler::reload()
+void WindHandler::Reload()
 {
 }

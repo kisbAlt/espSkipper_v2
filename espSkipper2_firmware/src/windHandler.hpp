@@ -21,7 +21,7 @@ private:
     int bytesRead = 0;
 public:
     WindHandler(InstrumentDataModel& dataModel);
-    void init();
-    void updateWindData();
-    void reload();
+    void Init();
+    void UpdateWindData();
+    void Reload();
 };

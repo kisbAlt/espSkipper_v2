@@ -6,36 +6,36 @@ Settings::Settings()
 {
 }
 
-void Settings::begin()
+void Settings::Begin()
 {
-    loadFromNVS();
-    Translator::setLanguage(getValue<uint8_t>(SettingsKey::Language));
+    LoadFromNVS();
+    Translator::SetLanguage(GetValue<uint8_t>(SettingsKey::Language));
 }
 
-bool Settings::isSensorDisabled(SensorId id) const
+bool Settings::IsSensorDisabled(SensorId id) const
 {
     if (id >= SensorId::MAX_SENSORS)
         return false;
     return disabledSensors[static_cast<size_t>(id)];
 }
 
-const SettingValue &Settings::getValueVariant(std::size_t index) const
+const SettingValue &Settings::GetValueVariant(std::size_t index) const
 {
     return currentValues[index];
 }
 
-const SettingDef &Settings::getSettingDef(SettingsKey key) const
+const SettingDef &Settings::GetSettingDef(SettingsKey key) const
 {
-    std::size_t idx = getIndex(key);
-    return getSettingDef(idx);
+    std::size_t idx = GetIndex(key);
+    return GetSettingDef(idx);
 }
 
-const SettingDef &Settings::getSettingDef(size_t index) const
+const SettingDef &Settings::GetSettingDef(size_t index) const
 {
     return Schema[index];
 }
 
-void Settings::setNextValue(size_t index)
+void Settings::SetNextValue(size_t index)
 {
     const OptionList &opts = Schema[index].options;
     SettingsKey key = Schema[index].key;
@@ -54,10 +54,10 @@ void Settings::setNextValue(size_t index)
 
     std::size_t nextIdx = (currentOptionIdx + 1) % opts.count;
     currentValues[index] = opts.items[nextIdx];
-    saveToNVS(key, currentValues[index]);
+    SaveToNVS(key, currentValues[index]);
 }
 
-void Settings::setPreviousValue(size_t index)
+void Settings::SetPreviousValue(size_t index)
 {
     const OptionList &opts = Schema[index].options;
     SettingsKey key = Schema[index].key;
@@ -76,41 +76,41 @@ void Settings::setPreviousValue(size_t index)
 
     std::size_t prevIdx = (currentOptionIdx == 0) ? (opts.count - 1) : (currentOptionIdx - 1);
     currentValues[index] = opts.items[prevIdx];
-    saveToNVS(key, currentValues[index]);
+    SaveToNVS(key, currentValues[index]);
 }
 
-void Settings::disableSensor(SensorId id)
+void Settings::DisableSensor(SensorId id)
 {
     if (id < SensorId::MAX_SENSORS)
     {
         disabledSensors[static_cast<size_t>(id)] = true;
-        preferences.putBool(getSensorNvsKey(id), disabledSensors[static_cast<size_t>(id)]);
+        preferences.putBool(GetSensorNvsKey(id), disabledSensors[static_cast<size_t>(id)]);
     }
         
 }
 
-void Settings::enableSensor(SensorId id)
+void Settings::EnableSensor(SensorId id)
 {
     if (id < SensorId::MAX_SENSORS)
     {
         disabledSensors[static_cast<size_t>(id)] = false;
-        preferences.putBool(getSensorNvsKey(id), disabledSensors[static_cast<size_t>(id)]);
+        preferences.putBool(GetSensorNvsKey(id), disabledSensors[static_cast<size_t>(id)]);
     }
        
 }
 
-bool Settings::isSensorEnabled(SensorId id) const
+bool Settings::IsSensorEnabled(SensorId id) const
 {
     if (id < SensorId::MAX_SENSORS)
         return !disabledSensors[static_cast<size_t>(id)];
     return false;
 }
 
-void Settings::saveToNVS(SettingsKey key, const SettingValue &value)
+void Settings::SaveToNVS(SettingsKey key, const SettingValue &value)
 {
     Serial.println("Saving NVS");
 
-    const char *nvsKey = getSettingNvsKey(key);
+    const char *nvsKey = GetSettingNvsKey(key);
 
     if (const bool *v = std::get_if<bool>(&value))
         preferences.putBool(nvsKey, *v);
@@ -118,7 +118,7 @@ void Settings::saveToNVS(SettingsKey key, const SettingValue &value)
     {
         preferences.putInt(nvsKey, *v);
         Serial.println("saving int");
-        Serial.println(getValue<int>(key));
+        Serial.println(GetValue<int>(key));
     }
 
     else if (const float *v = std::get_if<float>(&value))
@@ -127,14 +127,14 @@ void Settings::saveToNVS(SettingsKey key, const SettingValue &value)
         preferences.putUChar(nvsKey, *v);
 }
 
-void Settings::loadFromNVS()
+void Settings::LoadFromNVS()
 {
     Serial.println("loading NVS");
     preferences.begin("settings", false);
 
     for (std::size_t i = 0; i < Count; ++i)
     {
-        const char *nvsKey = getSettingNvsKey(Schema[i].key);
+        const char *nvsKey = GetSettingNvsKey(Schema[i].key);
         const SettingValue &def = Schema[i].defaultValue;
 
         if (const bool *d = std::get_if<bool>(&def))
@@ -143,7 +143,7 @@ void Settings::loadFromNVS()
         {
             currentValues[i] = preferences.getInt(nvsKey, *d);
             Serial.println("loaded int");
-            Serial.println(getValue<int>(i));
+            Serial.println(GetValue<int>(i));
         }
 
         else if (const float *d = std::get_if<float>(&def))
@@ -163,18 +163,18 @@ void Settings::loadFromNVS()
                                         id == SensorId::DateTimeYear ||
                                         id == SensorId::DateTimeMonth ||
                                         id == SensorId::DateTimeDay;
-        disabledSensors[i] = preferences.getBool(getSensorNvsKey(id), defaultDisabled);
+        disabledSensors[i] = preferences.getBool(GetSensorNvsKey(id), defaultDisabled);
     }
 }
 
-const char *Settings::getSettingNvsKey(SettingsKey key) const
+const char *Settings::GetSettingNvsKey(SettingsKey key) const
 {
     static char nvsKey[16];
     snprintf(nvsKey, sizeof(nvsKey), "sk_%u", static_cast<unsigned>(key));
     return nvsKey;
 }
 
-const char *Settings::getSensorNvsKey(SensorId id) const
+const char *Settings::GetSensorNvsKey(SensorId id) const
 {
     static char nvsKey[16];
     snprintf(nvsKey, sizeof(nvsKey), "sensor_%u", static_cast<unsigned>(id));
@@ -183,7 +183,7 @@ const char *Settings::getSensorNvsKey(SensorId id) const
 
 const char *SettingDef::GetTitleString() const
 {
-    return Translator::get(displayName);
+    return Translator::Get(displayName);
 }
 
 void SettingDef::GetOptionString(const SettingValue &currentValue, char *buffer, std::size_t bufferSize) const
@@ -194,7 +194,7 @@ void SettingDef::GetOptionString(const SettingValue &currentValue, char *buffer,
         {
             if (options.items[i] == currentValue)
             {
-                snprintf(buffer, bufferSize, "%s", Translator::get(optionTexts[i]));
+                snprintf(buffer, bufferSize, "%s", Translator::Get(optionTexts[i]));
                 return;
             }
         }
@@ -210,6 +210,6 @@ void SettingDef::GetOptionString(const SettingValue &currentValue, char *buffer,
         snprintf(buffer, bufferSize, "%d", static_cast<int>(arg));
     } 
     else if constexpr (std::is_same_v<T, bool>) {
-        snprintf(buffer, bufferSize, "%s", arg ? Translator::get(TextKey::SettingOn) : Translator::get(TextKey::SettingOff));
+        snprintf(buffer, bufferSize, "%s", arg ? Translator::Get(TextKey::SettingOn) : Translator::Get(TextKey::SettingOff));
     } }, currentValue);
 }

@@ -31,33 +31,33 @@ using ButtonCallback = std::function<void()>;
 
 class ButtonHandler {
 private:
-    uint8_t _pin;
+    uint8_t pin;
     
     // Shift register for noise filtering
-    uint8_t _history;
-    bool _isDown;
+    uint8_t history;
+    bool isDown;
     
-    unsigned long _pressStartTime;
-    unsigned long _lastReleaseTime;
+    unsigned long pressStartTime;
+    unsigned long lastReleaseTime;
     
-    uint8_t _clickCount;
-    bool _longPressTriggered;
+    uint8_t clickCount;
+    bool longPressTriggered;
 
     const unsigned long LONG_PRESS_MS   = 600;
     const unsigned long MULTI_CLICK_MS  = 300;
 
-    ButtonCallback _singleClickCb = nullptr;
-    ButtonCallback _doubleClickCb = nullptr;
-    ButtonCallback _longPressCb   = nullptr;
+    ButtonCallback singleClickCallback = nullptr;
+    ButtonCallback doubleClickCallback = nullptr;
+    ButtonCallback longPressCallback = nullptr;
 
 public:
     ButtonHandler(uint8_t pin);
-    void begin();
-    void process();
-    void onSingleClick(ButtonCallback cb);
-    void onDoubleClick(ButtonCallback cb);
-    void onLongPress(ButtonCallback cb);
-    void reload();
+    void Begin();
+    void Process();
+    void OnSingleClick(ButtonCallback cb);
+    void OnDoubleClick(ButtonCallback cb);
+    void OnLongPress(ButtonCallback cb);
+    void Reload();
 };
 
 #endif

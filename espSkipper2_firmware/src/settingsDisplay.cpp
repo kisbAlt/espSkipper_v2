@@ -7,7 +7,7 @@ SettingsDisplay::SettingsDisplay(Settings &settings, DisplayHandler &displayHand
 {
 }
 
-bool SettingsDisplay::processButtonEvent(ButtonEvent btnEvent, ButtonName btnName)
+bool SettingsDisplay::ProcessButtonEvent(ButtonEvent btnEvent, ButtonName btnName)
 {
     switch (btnEvent)
     {
@@ -15,7 +15,7 @@ bool SettingsDisplay::processButtonEvent(ButtonEvent btnEvent, ButtonName btnNam
         switch (btnName)
         {
         case ButtonName::BUTTON0:
-            if (settings.getSettingDef(status.currentSettingIndex).key == SettingsKey::DisabledSensors)
+            if (settings.GetSettingDef(status.currentSettingIndex).key == SettingsKey::DisabledSensors)
             {
                 status.mode = (status.mode == SettingDisplayMode::SettingsList) ? SettingDisplayMode::SensorList : SettingDisplayMode::SettingsList;
                 status.currentSettingIndex = 0;
@@ -28,36 +28,36 @@ bool SettingsDisplay::processButtonEvent(ButtonEvent btnEvent, ButtonName btnNam
             {
                 if (status.isEditing)
                 {
-                    if (settings.isSensorEnabled(static_cast<SensorId>(status.currentSettingIndex)))
-                        settings.disableSensor(static_cast<SensorId>(status.currentSettingIndex));
+                    if (settings.IsSensorEnabled(static_cast<SensorId>(status.currentSettingIndex)))
+                        settings.DisableSensor(static_cast<SensorId>(status.currentSettingIndex));
                     else
-                        settings.enableSensor(static_cast<SensorId>(status.currentSettingIndex));
+                        settings.EnableSensor(static_cast<SensorId>(status.currentSettingIndex));
                 }
                 else
                     status.currentSettingIndex = status.currentSettingIndex > 0 ? status.currentSettingIndex - 1 : static_cast<int>(SensorId::MAX_SENSORS) - 1;
             }
             else if (status.isEditing)
-                settings.setPreviousValue(status.currentSettingIndex);
+                settings.SetPreviousValue(status.currentSettingIndex);
             else
-                status.currentSettingIndex = status.currentSettingIndex > 0 ? status.currentSettingIndex - 1 : settings.getSettingsCount() - 1;
+                status.currentSettingIndex = status.currentSettingIndex > 0 ? status.currentSettingIndex - 1 : settings.GetSettingsCount() - 1;
             break;
         case ButtonName::BUTTON2:
             if (status.mode == SettingDisplayMode::SensorList)
             {
                 if (status.isEditing)
                 {
-                    if (settings.isSensorEnabled(static_cast<SensorId>(status.currentSettingIndex)))
-                        settings.disableSensor(static_cast<SensorId>(status.currentSettingIndex));
+                    if (settings.IsSensorEnabled(static_cast<SensorId>(status.currentSettingIndex)))
+                        settings.DisableSensor(static_cast<SensorId>(status.currentSettingIndex));
                     else
-                        settings.enableSensor(static_cast<SensorId>(status.currentSettingIndex));
+                        settings.EnableSensor(static_cast<SensorId>(status.currentSettingIndex));
                 }
                 else
                     status.currentSettingIndex = (status.currentSettingIndex + 1) % static_cast<int>(SensorId::MAX_SENSORS);
             }
             else if (status.isEditing)
-                settings.setNextValue(status.currentSettingIndex);
+                settings.SetNextValue(status.currentSettingIndex);
             else
-                status.currentSettingIndex = (status.currentSettingIndex + 1) % settings.getSettingsCount();
+                status.currentSettingIndex = (status.currentSettingIndex + 1) % settings.GetSettingsCount();
             break;
         case ButtonName::BUTTON3:
             if (status.mode == SettingDisplayMode::SensorList)
@@ -83,7 +83,7 @@ bool SettingsDisplay::processButtonEvent(ButtonEvent btnEvent, ButtonName btnNam
     return true;
 }
 
-void SettingsDisplay::drawSettingsUI(QueueHandle_t buttonEventQueue)
+void SettingsDisplay::DrawSettingsUI(QueueHandle_t buttonEventQueue)
 {
     Serial.println("drawSettingsUI1");
     displayHandler.DrawSettingsPage(status);
@@ -91,7 +91,7 @@ void SettingsDisplay::drawSettingsUI(QueueHandle_t buttonEventQueue)
     ButtonMessage buttonMessage;
     while (xQueueReceive(buttonEventQueue, &buttonMessage, portMAX_DELAY) == pdTRUE)
     {
-        if (!processButtonEvent(buttonMessage.event, buttonMessage.name))
+        if (!ProcessButtonEvent(buttonMessage.event, buttonMessage.name))
             break;
         displayHandler.DrawSettingsPage(status);
     }

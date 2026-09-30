@@ -19,12 +19,12 @@ static const char* const* dictionaries[] = { dict_EN, dict_HU };
 
 int Translator::currentLang = 0;
 
-void Translator::setLanguage(int langId) {
+void Translator::SetLanguage(int langId) {
     assert(langId >= 0 && langId < 2 && "Translator: Invalid language ID");
     currentLang = langId;
 }
 
-const char* Translator::get(const TextKey key) {
+const char* Translator::Get(const TextKey key) {
     assert(key < TextKey::Count && "Translator: Invalid TextKey");
     return dictionaries[currentLang][static_cast<int>(key)];
 }

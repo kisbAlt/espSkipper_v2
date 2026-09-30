@@ -72,6 +72,6 @@ private:
     static int currentLang;
 
 public:
-    static void setLanguage(int langId);
-    static const char* get(const TextKey key);
+    static void SetLanguage(int langId);
+    static const char* Get(const TextKey key);
 };

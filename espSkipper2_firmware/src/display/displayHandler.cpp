@@ -1,19 +1,14 @@
 #include "displayHandler.hpp"
 #include <Arduino.h>
-#include "Osptek_BWR_42.h"
 #include "fonts.hpp"
 #include "Osptek_BWR_42.h"
 #include "displayUtils.hpp"
 #include "Wire.h"
 #include "SPI.h"
-#include "fonts.hpp"
 #include "settingsHandler.hpp"
 #include "bitmaps.h"
 
-uint updateCounter = 0;
-unsigned long lastUpdate = 0;
-
-void DisplayHandler::convertValueToString(char *valueStr, int len, SensorValue value, SensorId id)
+void DisplayHandler::ConvertValueToString(char *valueStr, int len, SensorValue value, SensorId id)
 {
     std::visit([&valueStr, len, id](const auto &arg)
                {
@@ -35,7 +30,7 @@ void DisplayHandler::convertValueToString(char *valueStr, int len, SensorValue v
         } }, value);
 }
 
-int DisplayHandler::currentSensorDrawn() const
+int DisplayHandler::CurrentSensorDrawn() const
 {
     switch (currentLayout)
     {
@@ -53,20 +48,18 @@ DisplayHandler::DisplayHandler(InstrumentDataModel &dataModel, const Settings &s
 {
 }
 
-void DisplayHandler::init()
+void DisplayHandler::Init()
 {
     lcd.begin(true);
     lcd.clear(COLOR_NEUTRAL);
     lcd.update();
 }
 
-void DisplayHandler::updateDisplay()
+void DisplayHandler::UpdateDisplay()
 {
-    lastUpdate = millis();
     lcd.clear(COLOR_NEUTRAL);
     DrawLayout();
     lcd.update();
-    updateCounter++;
 }
 
 void DisplayHandler::DrawLayout()
@@ -81,20 +74,20 @@ void DisplayHandler::DrawLayout()
 
         lcd.drawRect(149, 200, 1, 200, COLOR_BLACK); // Middle border (0 + 2 + 147)
 
-        if (settings.getValue<bool>(SettingsKey::DisplayDateTime))
+        if (settings.GetValue<bool>(SettingsKey::DisplayDateTime))
         {
             char dateStr[32];
-            int hour = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeHour));
-            int minute = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeMinute));
-            if (settings.getValue<bool>(SettingsKey::DisplayTimeOnly))
+            int hour = std::get<int>(dataModel.GetSensorValue(SensorId::DateTimeHour));
+            int minute = std::get<int>(dataModel.GetSensorValue(SensorId::DateTimeMinute));
+            if (settings.GetValue<bool>(SettingsKey::DisplayTimeOnly))
             {
                 snprintf(dateStr, sizeof(dateStr), "%02d:%02d", hour, minute);
             }
             else
             {
-                int year = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeYear));
-                int month = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeMonth));
-                int day = std::get<int>(dataModel.getSensorValue(SensorId::DateTimeDay));
+                int year = std::get<int>(dataModel.GetSensorValue(SensorId::DateTimeYear));
+                int month = std::get<int>(dataModel.GetSensorValue(SensorId::DateTimeMonth));
+                int day = std::get<int>(dataModel.GetSensorValue(SensorId::DateTimeDay));
                 snprintf(dateStr, sizeof(dateStr), "%04d.%02d.%02d %02d:%02d", year, month, day, hour, minute);
             }
             DisplayUtils::DrawTextCentered(lcd, 180, dateStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
@@ -105,19 +98,19 @@ void DisplayHandler::DrawLayout()
                                     {
                                         int valueLen = strlen(unitText);
                                         char valueStr[32];
-                                        convertValueToString(valueStr, sizeof(valueStr), value, id);
+                                        ConvertValueToString(valueStr, sizeof(valueStr), value, id);
                                         if (id == focusedSensor)
                                         {
-                                            const int top_margin = 10;
-                                            const int side_margin = 10;
+                                            const int topMargin = 10;
+                                            const int sideMargin = 10;
                                             DisplayUtils::DrawTextCentered(lcd, -10, valueStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::SimplyMono_Bold50pt7b, 1);
-                                            DisplayUtils::DrawText(lcd, OSP_LCD_WIDTH - (valueLen * 12 + side_margin), top_margin, unitText, COLOR_RED, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
-                                            DisplayUtils::DrawText(lcd, side_margin, top_margin, Translator::get(titleKey), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+                                            DisplayUtils::DrawText(lcd, OSP_LCD_WIDTH - (valueLen * 12 + sideMargin), topMargin, unitText, COLOR_RED, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+                                            DisplayUtils::DrawText(lcd, sideMargin, topMargin, Translator::Get(titleKey), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
                                         }
                                         else
                                         {
                                             int adjustment = (pageIndex > 0 && static_cast<int>(focusedSensor) < index) ? 1 : 0;
-                                            if(pageIndex * (currentSensorDrawn() - 1) + adjustment > index) {
+                                            if(pageIndex * (CurrentSensorDrawn() - 1) + adjustment > index) {
                                                 return; // Skip drawing this sensor if it's not on the current page
                                             }
                                             int row = lowerDataCount / 2;
@@ -126,7 +119,7 @@ void DisplayHandler::DrawLayout()
                                             int cellX = (col * 149) + 5;
                                             int cellY = 200 + (row * 66) + 5;
 
-                                            DisplayUtils::DrawText(lcd, cellX, cellY, Translator::get(titleKey), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
+                                            DisplayUtils::DrawText(lcd, cellX, cellY, Translator::Get(titleKey), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
 
                                             DisplayUtils::DrawText(lcd, cellX+10, cellY + 38, valueStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 2);
 
@@ -140,15 +133,15 @@ void DisplayHandler::DrawLayout()
     case DisplayLayout::WindPage:
     {
 
-        DisplayUtils::DrawTextCentered(lcd, 15, Translator::get(TextKey::SensorWind), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+        DisplayUtils::DrawTextCentered(lcd, 15, Translator::Get(TextKey::SensorWind), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
 
         char valueStr[32];
-        convertValueToString(valueStr, sizeof(valueStr), dataModel.getSensorValueCurrentUnit(SensorId::WindSpeedAWS), SensorId::WindSpeedAWS);
+        ConvertValueToString(valueStr, sizeof(valueStr), dataModel.GetSensorValueCurrentUnit(SensorId::WindSpeedAWS), SensorId::WindSpeedAWS);
 
-        const int wind = std::get<int>(dataModel.getSensorValueCurrentUnit(SensorId::WindDirectionAWA));
+        const int wind = std::get<int>(dataModel.GetSensorValueCurrentUnit(SensorId::WindDirectionAWA));
 
         char unitStr[32];
-        dataModel.writeCurrentUnitString(unitStr, sizeof(unitStr), SensorId::WindSpeedAWS);
+        dataModel.WriteCurrentUnitString(unitStr, sizeof(unitStr), SensorId::WindSpeedAWS);
 
         lcd.drawBitmap(0, 0, epd_bitmap_wind_gimp, 300, 400, COLOR_BLACK);
         lcd.drawBitmapRotated(0, 0, epd_bitmap_wind_hand, 300, 400, COLOR_BLACK, wind);
@@ -156,10 +149,10 @@ void DisplayHandler::DrawLayout()
         if (wind <= 90 || wind > 270)
         {
             DisplayUtils::DrawTextCentered(lcd, 265, valueStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 3);
-            DisplayUtils::DrawTextCentered(lcd, 212, Translator::get(TextKey::SensorWindSpeedAWS), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+            DisplayUtils::DrawTextCentered(lcd, 212, Translator::Get(TextKey::SensorWindSpeedAWS), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
         } else {
             DisplayUtils::DrawTextCentered(lcd, 165, valueStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 3);
-            DisplayUtils::DrawTextCentered(lcd, 112, Translator::get(TextKey::SensorWindSpeedAWS), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+            DisplayUtils::DrawTextCentered(lcd, 112, Translator::Get(TextKey::SensorWindSpeedAWS), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
         }
 
         
@@ -174,67 +167,66 @@ void DisplayHandler::DrawLayout()
 
 void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
 {
-    lastUpdate = millis();
     lcd.clear(COLOR_NEUTRAL);
 
-    DisplayUtils::DrawTextCentered(lcd, 15, Translator::get(TextKey::Settings), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
-    int y_pos = 40;
+    DisplayUtils::DrawTextCentered(lcd, 15, Translator::Get(TextKey::Settings), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+    int yPos = 40;
     const int fitItemCount = 12;
     switch (status.mode)
     {
     case SettingDisplayMode::SettingsList:
     {
-        int y_pos = 40;
-        for (size_t i = 0; i < settings.getSettingsCount(); i++)
+        int yPos = 40;
+        for (size_t i = 0; i < settings.GetSettingsCount(); i++)
         {
-            const SettingDef &setting = settings.getSettingDef(i);
+            const SettingDef &setting = settings.GetSettingDef(i);
             const char *settingName = setting.GetTitleString();
             char valueStr[32];
-            setting.GetOptionString(settings.getValueVariant(i), valueStr, sizeof(valueStr));
+            setting.GetOptionString(settings.GetValueVariant(i), valueStr, sizeof(valueStr));
             if (status.isEditing && status.currentSettingIndex == i)
             {
-                lcd.fillRect(2, y_pos - 4, 296, 24, COLOR_BLACK);
-                DisplayUtils::DrawText(lcd, 10, y_pos, settingName, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
-                DisplayUtils::DrawText(lcd, 255, y_pos, valueStr, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+                lcd.fillRect(2, yPos - 4, 296, 24, COLOR_BLACK);
+                DisplayUtils::DrawText(lcd, 10, yPos, settingName, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
+                DisplayUtils::DrawText(lcd, 255, yPos, valueStr, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
             }
             else
             {
-                DisplayUtils::DrawText(lcd, 10, y_pos, settingName, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
-                DisplayUtils::DrawText(lcd, 255, y_pos, valueStr, COLOR_RED, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+                DisplayUtils::DrawText(lcd, 10, yPos, settingName, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
+                DisplayUtils::DrawText(lcd, 255, yPos, valueStr, COLOR_RED, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
                 if (status.currentSettingIndex == i)
                 {
-                    lcd.drawRect(2, y_pos - 4, 296, 24, COLOR_BLACK);
+                    lcd.drawRect(2, yPos - 4, 296, 24, COLOR_BLACK);
                 }
             }
-            y_pos += 30;
+            yPos += 30;
         }
         break;
     }
     case SettingDisplayMode::SensorList:
     {
-        const char *onText = Translator::get(TextKey::SettingOn);
-        const char *offText = Translator::get(TextKey::SettingOff);
+        const char *onText = Translator::Get(TextKey::SettingOn);
+        const char *offText = Translator::Get(TextKey::SettingOff);
         const int startIndex = status.currentSettingIndex > fitItemCount ? status.currentSettingIndex - fitItemCount+1 : 0;
         for (size_t i = startIndex; i < static_cast<size_t>(SensorId::MAX_SENSORS) && i < status.currentSettingIndex + fitItemCount; i++)
         {
             const SensorId sensorId = static_cast<SensorId>(i);
-            const char *sensorName = Translator::get(dataModel.getSensorTitleKey(sensorId));
+            const char *sensorName = Translator::Get(dataModel.GetSensorTitleKey(sensorId));
             if (status.isEditing && status.currentSettingIndex == i)
             {
-                lcd.fillRect(2, y_pos - 4, 296, 24, COLOR_BLACK);
-                DisplayUtils::DrawText(lcd, 10, y_pos, sensorName, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
-                DisplayUtils::DrawText(lcd, 255, y_pos, dataModel.isSensorEnabled(sensorId) ? onText : offText, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+                lcd.fillRect(2, yPos - 4, 296, 24, COLOR_BLACK);
+                DisplayUtils::DrawText(lcd, 10, yPos, sensorName, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
+                DisplayUtils::DrawText(lcd, 255, yPos, dataModel.IsSensorEnabled(sensorId) ? onText : offText, COLOR_NEUTRAL, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
             }
             else
             {
-                DisplayUtils::DrawText(lcd, 10, y_pos, sensorName, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
-                DisplayUtils::DrawText(lcd, 255, y_pos, dataModel.isSensorEnabled(sensorId) ? onText : offText, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+                DisplayUtils::DrawText(lcd, 10, yPos, sensorName, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::pf_ronda_seven8pt7b, 2);
+                DisplayUtils::DrawText(lcd, 255, yPos, dataModel.IsSensorEnabled(sensorId) ? onText : offText, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
                 if (status.currentSettingIndex == i)
                 {
-                    lcd.drawRect(2, y_pos - 4, 296, 24, COLOR_BLACK);
+                    lcd.drawRect(2, yPos - 4, 296, 24, COLOR_BLACK);
                 }
             }
-            y_pos += 30;
+            yPos += 30;
         }
         break;
     }
@@ -243,7 +235,6 @@ void DisplayHandler::DrawSettingsPage(const SettingsDisplayStatus &status)
     }
 
     lcd.update();
-    updateCounter++;
 }
 
 void DisplayHandler::ResetDisplay()
@@ -276,23 +267,23 @@ void DisplayHandler::ResetDisplay()
     lcd.update();
 }
 
-void DisplayHandler::stepFocusedSensor()
+void DisplayHandler::StepFocusedSensor()
 {
     do
     {
         focusedSensor = static_cast<SensorId>((static_cast<int>(focusedSensor) + 1) % static_cast<int>(SensorId::MAX_SENSORS));
-    } while (!dataModel.isSensorEnabledAndHaveData(focusedSensor));
+    } while (!dataModel.IsSensorEnabledAndHasData(focusedSensor));
 }
 
-void DisplayHandler::nextDisplayPage()
+void DisplayHandler::NextDisplayPage()
 {
-    if (currentLayout == DisplayLayout::ThreeColTwoRow && (currentSensorDrawn() + (pageIndex * currentSensorDrawn() - pageIndex)) < dataModel.getActiveSensorCount())
+    if (currentLayout == DisplayLayout::ThreeColTwoRow && (CurrentSensorDrawn() + (pageIndex * CurrentSensorDrawn() - pageIndex)) < dataModel.GetActiveSensorCount())
     {
         pageIndex++;
     }
     else
     {
         pageIndex = 0;
-        currentLayout = static_cast<DisplayLayout>((static_cast<int>(currentLayout) + 1) % static_cast<int>(DisplayLayout::MAX_LAYOUTs));
+        currentLayout = static_cast<DisplayLayout>((static_cast<int>(currentLayout) + 1) % static_cast<int>(DisplayLayout::MAX_LAYOUTS));
     }
 }

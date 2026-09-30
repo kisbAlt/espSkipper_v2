@@ -1,63 +1,63 @@
 #include "buttonHandler.hpp"
 
 ButtonHandler::ButtonHandler(uint8_t pin)
-    : _pin(pin), _history(0xFF), _isDown(false),
-          _pressStartTime(0), _lastReleaseTime(0),
-          _clickCount(0), _longPressTriggered(false) {}
+        : pin(pin), history(0xFF), isDown(false),
+            pressStartTime(0), lastReleaseTime(0),
+            clickCount(0), longPressTriggered(false) {}
 
-void ButtonHandler::begin() {
-    pinMode(_pin, INPUT_PULLUP);
+void ButtonHandler::Begin() {
+    pinMode(pin, INPUT_PULLUP);
 }
 
 
-void ButtonHandler::process() {
+void ButtonHandler::Process() {
     unsigned long now = millis();
 
-    _history = (_history << 1) | digitalRead(_pin);
+    history = (history << 1) | digitalRead(pin);
 
     // read last 4 bits with bitmask (4 samples * 5ms = 20ms debounce).
-    if (!_isDown && (_history & 0x0F) == 0x00) {
-        _isDown = true;
-        _pressStartTime = now;
-        _longPressTriggered = false;
+    if (!isDown && (history & 0x0F) == 0x00) {
+        isDown = true;
+        pressStartTime = now;
+        longPressTriggered = false;
     }
     // 0x0F (binary 00001111) => newest 4 readings were all HIGH
-    else if (_isDown && (_history & 0x0F) == 0x0F) {
-        _isDown = false;
-        _lastReleaseTime = now;
+    else if (isDown && (history & 0x0F) == 0x0F) {
+        isDown = false;
+        lastReleaseTime = now;
 
-        if (!_longPressTriggered) {
-            _clickCount++;
+        if (!longPressTriggered) {
+            clickCount++;
         }
     }
 
     // handle long press
-    if (_isDown && !_longPressTriggered) {
-        if (now - _pressStartTime >= LONG_PRESS_MS) {
-            _longPressTriggered = true;
-            _clickCount = 0; // Invalidate any clicks
-            if (_longPressCb) _longPressCb();
+    if (isDown && !longPressTriggered) {
+        if (now - pressStartTime >= LONG_PRESS_MS) {
+            longPressTriggered = true;
+            clickCount = 0; // Invalidate any clicks
+            if (longPressCallback) longPressCallback();
         }
     }
 
     // handle clicks
-    if (!_isDown && _clickCount > 0) {
-        if (now - _lastReleaseTime >= MULTI_CLICK_MS) {
-            if (_clickCount == 1) {
-                if (_singleClickCb) _singleClickCb();
-            } else if (_clickCount >= 2) {
-                if (_doubleClickCb) _doubleClickCb();
+    if (!isDown && clickCount > 0) {
+        if (now - lastReleaseTime >= MULTI_CLICK_MS) {
+            if (clickCount == 1) {
+                if (singleClickCallback) singleClickCallback();
+            } else if (clickCount >= 2) {
+                if (doubleClickCallback) doubleClickCallback();
             }
-            _clickCount = 0; // Reset
+            clickCount = 0; // Reset
         }
     }
 }
 
- void ButtonHandler::onSingleClick(ButtonCallback cb) { _singleClickCb = cb; }
+ void ButtonHandler::OnSingleClick(ButtonCallback cb) { singleClickCallback = cb; }
 
-void ButtonHandler::onDoubleClick(ButtonCallback cb) { _doubleClickCb = cb; }
+void ButtonHandler::OnDoubleClick(ButtonCallback cb) { doubleClickCallback = cb; }
 
-void ButtonHandler::onLongPress(ButtonCallback cb)   { _longPressCb = cb; }
-void ButtonHandler::reload()
+void ButtonHandler::OnLongPress(ButtonCallback cb)   { longPressCallback = cb; }
+void ButtonHandler::Reload()
 {
 }

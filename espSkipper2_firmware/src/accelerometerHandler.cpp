@@ -11,17 +11,17 @@ LIS3DH SensorOne(SPI_MODE, LIS3DH_CS);
 AccelerometerHandler::AccelerometerHandler(InstrumentDataModel& dataModel) : dataModel(dataModel)
 {
     SensorUnit degreeUnit = SensorUnit(SensorUnitEnum::Degrees);
-    dataModel.addSensor(SensorId::TiltPitch, 0, degreeUnit, TextKey::SensorTiltPitch);
-    dataModel.addSensor(SensorId::TiltPitchMin, 0, degreeUnit, TextKey::SensorTiltPitchMin);
-    dataModel.addSensor(SensorId::TiltPitchMax, 0, degreeUnit, TextKey::SensorTiltPitchMax);
-    dataModel.addSensor(SensorId::TiltPitchAvg, 0, degreeUnit, TextKey::SensorTiltPitchAvg, true);
-    dataModel.addSensor(SensorId::TiltRoll, 0, degreeUnit, TextKey::SensorTiltRoll);
-    dataModel.addSensor(SensorId::TiltRollMin, 0, degreeUnit, TextKey::SensorTiltRollMin);
-    dataModel.addSensor(SensorId::TiltRollMax, 0, degreeUnit, TextKey::SensorTiltRollMax);
-    dataModel.addSensor(SensorId::TiltRollAvg, 0, degreeUnit, TextKey::SensorTiltRollAvg, true);
+    dataModel.AddSensor(SensorId::TiltPitch, 0, degreeUnit, TextKey::SensorTiltPitch);
+    dataModel.AddSensor(SensorId::TiltPitchMin, 0, degreeUnit, TextKey::SensorTiltPitchMin);
+    dataModel.AddSensor(SensorId::TiltPitchMax, 0, degreeUnit, TextKey::SensorTiltPitchMax);
+    dataModel.AddSensor(SensorId::TiltPitchAvg, 0, degreeUnit, TextKey::SensorTiltPitchAvg, true);
+    dataModel.AddSensor(SensorId::TiltRoll, 0, degreeUnit, TextKey::SensorTiltRoll);
+    dataModel.AddSensor(SensorId::TiltRollMin, 0, degreeUnit, TextKey::SensorTiltRollMin);
+    dataModel.AddSensor(SensorId::TiltRollMax, 0, degreeUnit, TextKey::SensorTiltRollMax);
+    dataModel.AddSensor(SensorId::TiltRollAvg, 0, degreeUnit, TextKey::SensorTiltRollAvg, true);
 }
 
-void AccelerometerHandler::init()
+void AccelerometerHandler::Init()
 {
     SensorOne.settings.tempEnabled = 1;
     SensorOne.settings.accelSampleRate = 10;
@@ -35,33 +35,33 @@ void AccelerometerHandler::init()
 
 }
 
-void AccelerometerHandler::readAccelerometerData()
+void AccelerometerHandler::ReadAccelerometerData()
 {
-    const float raw_x = SensorOne.readFloatAccelX();
-    const float raw_y = SensorOne.readFloatAccelY();
-    const float raw_z = SensorOne.readFloatAccelZ();
+    const float rawX = SensorOne.readFloatAccelX();
+    const float rawY = SensorOne.readFloatAccelY();
+    const float rawZ = SensorOne.readFloatAccelZ();
 
     // swapping Y and Z for PCB position
-    const float virt_x = raw_x;  
-    const float virt_y = -raw_z; // keep the rotation direction standard
-    const float virt_z = raw_y;
+    const float virtualX = rawX;
+    const float virtualY = -rawZ; // keep the rotation direction standard
+    const float virtualZ = rawY;
 
-    const float lastRoll = atan2(-virt_x, sqrt((virt_y * virt_y) + (virt_z * virt_z))) * (180.0 / PI);
-    const float lastPitch  = atan2(virt_y, virt_z) * (180.0 / PI);
+    const float lastRoll = atan2(-virtualX, sqrt((virtualY * virtualY) + (virtualZ * virtualZ))) * (180.0 / PI);
+    const float lastPitch  = atan2(virtualY, virtualZ) * (180.0 / PI);
 
-    const int rollRounded = InstrumentDataModel::fast_round_positive(InstrumentDataModel::make_positive(lastRoll));
-    const int pitchRounded = InstrumentDataModel::fast_round_positive(InstrumentDataModel::make_positive(lastPitch));
+    const int rollRounded = InstrumentDataModel::FastRoundPositive(InstrumentDataModel::MakePositive(lastRoll));
+    const int pitchRounded = InstrumentDataModel::FastRoundPositive(InstrumentDataModel::MakePositive(lastPitch));
 
-    dataModel.updateSensor(SensorId::TiltPitch, pitchRounded);
-    dataModel.updateSensor(SensorId::TiltPitchAvg, pitchRounded);
-    dataModel.updateSensorIfSmaller(SensorId::TiltPitchMin, pitchRounded);
-    dataModel.updateSensorIfLarger(SensorId::TiltPitchMax, pitchRounded);
-    dataModel.updateSensor(SensorId::TiltRoll, rollRounded);
-    dataModel.updateSensor(SensorId::TiltRollAvg, rollRounded);
-    dataModel.updateSensorIfSmaller(SensorId::TiltRollMin, rollRounded);
-    dataModel.updateSensorIfLarger(SensorId::TiltRollMax, rollRounded);
+    dataModel.UpdateSensor(SensorId::TiltPitch, pitchRounded);
+    dataModel.UpdateSensor(SensorId::TiltPitchAvg, pitchRounded);
+    dataModel.UpdateSensorIfSmaller(SensorId::TiltPitchMin, pitchRounded);
+    dataModel.UpdateSensorIfLarger(SensorId::TiltPitchMax, pitchRounded);
+    dataModel.UpdateSensor(SensorId::TiltRoll, rollRounded);
+    dataModel.UpdateSensor(SensorId::TiltRollAvg, rollRounded);
+    dataModel.UpdateSensorIfSmaller(SensorId::TiltRollMin, rollRounded);
+    dataModel.UpdateSensorIfLarger(SensorId::TiltRollMax, rollRounded);
 }
 
-void AccelerometerHandler::reload()
+void AccelerometerHandler::Reload()
 {
 }

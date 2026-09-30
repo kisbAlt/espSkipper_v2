@@ -14,23 +14,23 @@ HardwareSerial ser(2); // use UART2
 static uint8_t rxBuffer[SERIAL_BUFFER];
 static size_t rxLen = 0;
 
-void DepthHandler::begin()
+void DepthHandler::Begin()
 {
     ser.setRxBufferSize(SERIAL_BUFFER);
     ser.begin(38400, SERIAL_8N1, 7, -1); // RX=GPI7
 }
 
 DepthHandler::DepthHandler(const Settings &settings, InstrumentDataModel &dataModel)
-    : settings(settings), dataModel(dataModel)
+    : dataModel(dataModel)
 {
-    dataModel.addSensor(SensorId::WaterDepth, (float)0.0f, SensorUnitEnum::Meter, TextKey::SensorDepth);
+    dataModel.AddSensor(SensorId::WaterDepth, (float)0.0f, SensorUnitEnum::Meter, TextKey::SensorDepth);
 }
 
 bool DepthHandler::ReadPacket()
 {
 
     bool foundValidPacket = false;
-    uint16_t latest_depth_index = 0;
+    uint16_t latestDepthIndex = 0;
 
     while (ser.available() >= 4)
     {
@@ -54,15 +54,15 @@ bool DepthHandler::ReadPacket()
             continue;
         }
 
-        latest_depth_index = packet[1] | (packet[2] << 8);
+        latestDepthIndex = packet[1] | (packet[2] << 8);
         foundValidPacket = true;
     }
 
     if (foundValidPacket)
     {
-        float actual_depth_meters = latest_depth_index * 0.009504f;
+        float actualDepthMeters = latestDepthIndex * 0.009504f;
         
-        dataModel.updateSensor(SensorId::WaterDepth, actual_depth_meters);
+        dataModel.UpdateSensor(SensorId::WaterDepth, actualDepthMeters);
         return true;
     }
 

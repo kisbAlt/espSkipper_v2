@@ -5,8 +5,6 @@
 #include "instrumentDataFormats.hpp"
 #include "buttonHandler.hpp"
 #include "stringTranslator.hpp"
-#include <mutex>
-#include <condition_variable>
 #include <Preferences.h>
 
 enum class SettingsKey
@@ -52,33 +50,33 @@ class Settings
 {
 public:
     Settings();
-    void begin();
-    bool isSensorDisabled(SensorId id) const;
-    constexpr uint8_t getSettingsCount() const { return Count; }
+    void Begin();
+    bool IsSensorDisabled(SensorId id) const;
+    constexpr uint8_t GetSettingsCount() const { return Count; }
 
     template <typename T>
-    bool setValue(SettingsKey key, T value)
+    bool SetValue(SettingsKey key, T value)
     {
-        std::size_t idx = getIndex(key);
+        std::size_t idx = GetIndex(key);
 
         if (std::holds_alternative<T>(currentValues[idx]))
         {
             currentValues[idx] = value;
-            saveToNVS(key, currentValues[idx]);
+            SaveToNVS(key, currentValues[idx]);
             return true;
         }
         return false;
     }
 
     template <typename T>
-    T getValue(SettingsKey key) const
+    T GetValue(SettingsKey key) const
     {
-        std::size_t idx = getIndex(key);
-        return getValue<T>(idx);
+        std::size_t idx = GetIndex(key);
+        return GetValue<T>(idx);
     }
 
     template <typename T>
-    T getValue(size_t idx) const
+    T GetValue(size_t idx) const
     {
         if (const T *val = std::get_if<T>(&currentValues[idx]))
         {
@@ -87,15 +85,15 @@ public:
         return T{};
     }
 
-    const SettingValue &getValueVariant(std::size_t index) const;
-    const SettingDef &getSettingDef(SettingsKey key) const;
-    const SettingDef &getSettingDef(size_t index) const;
+    const SettingValue &GetValueVariant(std::size_t index) const;
+    const SettingDef &GetSettingDef(SettingsKey key) const;
+    const SettingDef &GetSettingDef(size_t index) const;
 
-    void setNextValue(size_t index);
-    void setPreviousValue(size_t index);
-    void enableSensor(SensorId id);
-    void disableSensor(SensorId id);
-    bool isSensorEnabled(SensorId id) const;
+    void SetNextValue(size_t index);
+    void SetPreviousValue(size_t index);
+    void EnableSensor(SensorId id);
+    void DisableSensor(SensorId id);
+    bool IsSensorEnabled(SensorId id) const;
 
 private:
     static constexpr std::size_t Count = 11;
@@ -157,7 +155,7 @@ private:
     };
     SettingValue currentValues[Count];
 
-    static constexpr std::size_t getIndex(SettingsKey key)
+    static constexpr std::size_t GetIndex(SettingsKey key)
     {
         for (std::size_t i = 0; i < Count; ++i)
         {
@@ -169,10 +167,10 @@ private:
     bool disabledSensors[static_cast<size_t>(SensorId::MAX_SENSORS)] = {false};
     Preferences preferences;
 
-    void saveToNVS(SettingsKey key, const SettingValue &value);
+    void SaveToNVS(SettingsKey key, const SettingValue &value);
 
-    void loadFromNVS();
+    void LoadFromNVS();
 
-    const char *getSettingNvsKey(SettingsKey key) const;
-    const char *getSensorNvsKey(SensorId id) const;
+    const char *GetSettingNvsKey(SettingsKey key) const;
+    const char *GetSensorNvsKey(SensorId id) const;
 };

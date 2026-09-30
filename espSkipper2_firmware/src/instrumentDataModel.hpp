@@ -25,35 +25,34 @@ private:
         SensorValue GetValueInUnit(SensorUnitEnum targetUnitEnum) const;
     };
 
-    std::array<SensorRecord, static_cast<size_t>(SensorId::MAX_SENSORS)> m_data;
-    const Settings &m_settings;
-    SensorUnitEnum getCurrentUnitForSensor(SensorId id) const;
+    std::array<SensorRecord, static_cast<size_t>(SensorId::MAX_SENSORS)> data;
+    const Settings &settings;
+    SensorUnitEnum GetCurrentUnitForSensor(SensorId id) const;
 
 public:
     InstrumentDataModel(const Settings &settings);
-    int count = 0;
-    void updateSensor(SensorId id, SensorValue val);
-    void updateSensorIfLarger(SensorId id, SensorValue val);
-    void updateSensorIfSmaller(SensorId id, SensorValue val);
-    void addSensor(SensorId id, SensorValue val, SensorUnit unit, TextKey titleKey, bool isAverage = false);
-    bool isSensorEnabled(SensorId id) const;
-    bool sensorHaveData(SensorId id) const;
-    SensorValue getSensorValue(SensorId id) const;
-    SensorValue getSensorValueInUnit(SensorId id, SensorUnitEnum targetUnitEnum) const;
-    TextKey getSensorTitleKey(SensorId id) const;
-    bool isSensorEnabledAndHaveData(SensorId id) const;
-    std::vector<std::pair<SensorId, SensorValue>> getDisplaySnapshot() const;
-    int getActiveSensorCount() const;
-    void reload();
-    void writeCurrentUnitString(char* unitString, size_t bufferSize, SensorId id) const;
-    SensorValue getSensorValueCurrentUnit(SensorId id) const;
+    void UpdateSensor(SensorId id, SensorValue val);
+    void UpdateSensorIfLarger(SensorId id, SensorValue val);
+    void UpdateSensorIfSmaller(SensorId id, SensorValue val);
+    void AddSensor(SensorId id, SensorValue val, SensorUnit unit, TextKey titleKey, bool isAverage = false);
+    bool IsSensorEnabled(SensorId id) const;
+    bool SensorHasData(SensorId id) const;
+    SensorValue GetSensorValue(SensorId id) const;
+    SensorValue GetSensorValueInUnit(SensorId id, SensorUnitEnum targetUnitEnum) const;
+    TextKey GetSensorTitleKey(SensorId id) const;
+    bool IsSensorEnabledAndHasData(SensorId id) const;
+    std::vector<std::pair<SensorId, SensorValue>> GetDisplaySnapshot() const;
+    int GetActiveSensorCount() const;
+    void Reload();
+    void WriteCurrentUnitString(char* unitString, size_t bufferSize, SensorId id) const;
+    SensorValue GetSensorValueCurrentUnit(SensorId id) const;
 
-    inline static int make_positive(int x)
+    inline static int MakePositive(int x)
     {
         return (x < 0) ? -x : x;
     }
 
-    inline static int fast_round_positive(float x)
+    inline static int FastRoundPositive(float x)
     {
         return static_cast<int>(x + 0.5f);
     }
@@ -63,13 +62,13 @@ public:
     {
         int displayIndex = 0;
 
-        for (size_t i = 0; i < m_data.size(); ++i)
+        for (size_t i = 0; i < data.size(); ++i)
         {
-            if (isSensorEnabledAndHaveData(static_cast<SensorId>(i)))
+            if (IsSensorEnabledAndHasData(static_cast<SensorId>(i)))
             {
-                std::visit([](const auto &arg) {}, m_data[i].value);
-                SensorUnitEnum settingsUnit = getCurrentUnitForSensor(m_data[i].id);
-                cb(displayIndex, m_data[i].titleKey, m_data[i].GetValueInUnit(settingsUnit), GetUnitString(settingsUnit), m_data[i].id);
+                std::visit([](const auto &arg) {}, data[i].value);
+                SensorUnitEnum settingsUnit = GetCurrentUnitForSensor(data[i].id);
+                cb(displayIndex, data[i].titleKey, data[i].GetValueInUnit(settingsUnit), GetUnitString(settingsUnit), data[i].id);
                 displayIndex++;
             }
         }

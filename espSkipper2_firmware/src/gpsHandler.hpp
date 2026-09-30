@@ -9,7 +9,7 @@ private:
     InstrumentDataModel& dataModel;
 public:
     GpsHandler(InstrumentDataModel& dataModel);
-    void init();
-    void updateGpsData();
-    void reload();
+    void Init();
+    void UpdateGpsData();
+    void Reload();
 };

@@ -40,18 +40,16 @@ void handleButtonEvent(const ButtonName btnName, const ButtonEvent event);
 
 void globalButtonTask(void* arg) {
     while (true) {
-        btn0.process();
-        btn1.process();
-        btn2.process();
-        btn3.process();
+        btn0.Process();
+        btn1.Process();
+        btn2.Process();
+        btn3.Process();
         vTaskDelay(pdMS_TO_TICKS(5));
     }
 }
 
-TaskHandle_t SensorTaskHandle;
-
-LedHandler btnLed(3, []() { return settings.getValue<bool>(SettingsKey::BtnLedEnabled); }, []() { return settings.getValue<uint8_t>(SettingsKey::BtnBrightness); }, 0);
-LedHandler lcdLed(18, []() { return settings.getValue<bool>(SettingsKey::LCDLedEnabled); }, []() { return settings.getValue<uint8_t>(SettingsKey::LCDBrightness); }, 1);
+LedHandler btnLed(3, []() { return settings.GetValue<bool>(SettingsKey::BtnLedEnabled); }, []() { return settings.GetValue<uint8_t>(SettingsKey::BtnBrightness); }, 0);
+LedHandler lcdLed(18, []() { return settings.GetValue<bool>(SettingsKey::LCDLedEnabled); }, []() { return settings.GetValue<uint8_t>(SettingsKey::LCDBrightness); }, 1);
 
 enum class AppState
 {
@@ -60,13 +58,13 @@ enum class AppState
 };
 AppState currentState = AppState::MAIN_SCREEN;
 void reloadAll() {
-    btnLed.reload();
-    lcdLed.reload();
-    gpsHandler.reload();
-    accelerometerHandler.reload();
-    instrumentDataModel.reload();
-    windHandler.reload();
-    Translator::setLanguage(settings.getValue<uint8_t>(SettingsKey::Language));
+    btnLed.Reload();
+    lcdLed.Reload();
+    gpsHandler.Reload();
+    accelerometerHandler.Reload();
+    instrumentDataModel.Reload();
+    windHandler.Reload();
+    Translator::SetLanguage(settings.GetValue<uint8_t>(SettingsKey::Language));
 }
 
 void sensorDisplayTask(void *pvParameters)
@@ -84,16 +82,16 @@ void sensorDisplayTask(void *pvParameters)
 
         if (currentState == AppState::SETTINGS_SCREEN)
         {
-            settingsDisplay.drawSettingsUI(buttonEventQueue);
+            settingsDisplay.DrawSettingsUI(buttonEventQueue);
             reloadAll();
             currentState = AppState::MAIN_SCREEN;
         }
-        displayHandler.updateDisplay();
-        accelerometerHandler.readAccelerometerData();
-        gpsHandler.updateGpsData();
-        depthHandler.ReadPacket();
-        windHandler.updateWindData();
-        vTaskDelay(pdMS_TO_TICKS(settings.getValue<int>(SettingsKey::DisplayScreenUpdate)));
+            displayHandler.UpdateDisplay();
+            accelerometerHandler.ReadAccelerometerData();
+            gpsHandler.UpdateGpsData();
+            depthHandler.ReadPacket();
+            windHandler.UpdateWindData();
+        vTaskDelay(pdMS_TO_TICKS(settings.GetValue<int>(SettingsKey::DisplayScreenUpdate)));
     }
 }
 
@@ -105,10 +103,10 @@ void handleButtonEvent(const ButtonName btnName, const ButtonEvent event)
         switch (btnName)
         {
         case ButtonName::BUTTON0:
-            displayHandler.stepFocusedSensor();
+            displayHandler.StepFocusedSensor();
             break;
         case ButtonName::BUTTON1:
-            displayHandler.nextDisplayPage();
+            displayHandler.NextDisplayPage();
             break;
         case ButtonName::BUTTON3:
             currentState = AppState::SETTINGS_SCREEN;
@@ -120,11 +118,11 @@ void handleButtonEvent(const ButtonName btnName, const ButtonEvent event)
     case ButtonEvent::LONG_PRESS:
         if (btnName == ButtonName::BUTTON0)
         {
-            const bool newValue = !settings.getValue<bool>(SettingsKey::LCDLedEnabled);
-            settings.setValue(SettingsKey::BtnLedEnabled, newValue);
-            settings.setValue(SettingsKey::LCDLedEnabled, newValue);
-            btnLed.reload();
-            lcdLed.reload();
+            const bool newValue = !settings.GetValue<bool>(SettingsKey::LCDLedEnabled);
+            settings.SetValue(SettingsKey::BtnLedEnabled, newValue);
+            settings.SetValue(SettingsKey::LCDLedEnabled, newValue);
+            btnLed.Reload();
+            lcdLed.Reload();
         }
         break;
     case ButtonEvent::NONE:
@@ -137,7 +135,7 @@ void setup()
 {
     Serial.begin(115200);
     delay(1000); // Give serial a moment to wake up
-    settings.begin();
+    settings.Begin();
 
     Serial.println("Init PINs and SPI");
     pinMode(LIS3DH_CS, OUTPUT);
@@ -148,42 +146,42 @@ void setup()
     SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
 
     Serial.println("Init Display");
-    displayHandler.init();
+    displayHandler.Init();
     Serial.println("Init Accelerometer");
-    accelerometerHandler.init();
+    accelerometerHandler.Init();
     Serial.println("Init GPS");
-    gpsHandler.init();
-    depthHandler.begin();
-    windHandler.init();
+    gpsHandler.Init();
+    depthHandler.Begin();
+    windHandler.Init();
 
     // Initialize buttons
-    btn0.begin();
-    btn0.onDoubleClick([]()
+    btn0.Begin();
+    btn0.OnDoubleClick([]()
                                              { postButtonEvent(ButtonName::BUTTON0, ButtonEvent::DOUBLE_CLICK); });
-    btn0.onLongPress([]()
+    btn0.OnLongPress([]()
                                          { postButtonEvent(ButtonName::BUTTON0, ButtonEvent::LONG_PRESS); });
-    btn0.onSingleClick([]()
+    btn0.OnSingleClick([]()
                                              { postButtonEvent(ButtonName::BUTTON0, ButtonEvent::SINGLE_CLICK); });
-    btn1.begin();
-    btn1.onDoubleClick([]()
+    btn1.Begin();
+    btn1.OnDoubleClick([]()
                                              { postButtonEvent(ButtonName::BUTTON1, ButtonEvent::DOUBLE_CLICK); });
-    btn1.onLongPress([]()
+    btn1.OnLongPress([]()
                                          { postButtonEvent(ButtonName::BUTTON1, ButtonEvent::LONG_PRESS); });
-    btn1.onSingleClick([]()
+    btn1.OnSingleClick([]()
                                              { postButtonEvent(ButtonName::BUTTON1, ButtonEvent::SINGLE_CLICK); });
-    btn2.begin();
-    btn2.onDoubleClick([]()
+    btn2.Begin();
+    btn2.OnDoubleClick([]()
                                              { postButtonEvent(ButtonName::BUTTON2, ButtonEvent::DOUBLE_CLICK); });
-    btn2.onLongPress([]()
+    btn2.OnLongPress([]()
                                          { postButtonEvent(ButtonName::BUTTON2, ButtonEvent::LONG_PRESS); });
-    btn2.onSingleClick([]()
+    btn2.OnSingleClick([]()
                                              { postButtonEvent(ButtonName::BUTTON2, ButtonEvent::SINGLE_CLICK); });
-    btn3.begin();
-    btn3.onDoubleClick([]()
+    btn3.Begin();
+    btn3.OnDoubleClick([]()
                                              { postButtonEvent(ButtonName::BUTTON3, ButtonEvent::DOUBLE_CLICK); });
-    btn3.onLongPress([]()
+    btn3.OnLongPress([]()
                                          { postButtonEvent(ButtonName::BUTTON3, ButtonEvent::LONG_PRESS); });
-    btn3.onSingleClick([]()
+    btn3.OnSingleClick([]()
                                              { postButtonEvent(ButtonName::BUTTON3, ButtonEvent::SINGLE_CLICK); });
 
         buttonEventQueue = xQueueCreate(16, sizeof(ButtonMessage));
@@ -199,7 +197,7 @@ void setup()
         8192,
         NULL,
         1,
-        &SensorTaskHandle,
+        NULL,
         0
     );
 
@@ -213,8 +211,8 @@ void setup()
         1
     );
 
-    btnLed.begin();
-    lcdLed.begin();
+    btnLed.Begin();
+    lcdLed.Begin();
 
     Serial.println("Setup complete, resetting display.");
 }

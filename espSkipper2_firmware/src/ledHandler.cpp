@@ -2,32 +2,32 @@
 #include "Arduino.h"
 
 LedHandler::LedHandler(uint8_t pin, IsLedEnabledCallback isLedEnabled, GetLedBrightnessCallback getLedBrightness, uint8_t pwmChannel)
-    : _pin(pin), _pwmChannel(pwmChannel), isLedEnabled(isLedEnabled), getLedBrightness(getLedBrightness), _isBlinking(false),
-      _blinkInterval(0), _lastBlinkTime(0)
+        : pin(pin), pwmChannel(pwmChannel), isLedEnabled(isLedEnabled), getLedBrightness(getLedBrightness), isBlinking(false),
+            blinkInterval(0), lastBlinkTime(0)
 {
 }
 
-void LedHandler::begin()
+void LedHandler::Begin()
 {
-    ledcSetup(_pwmChannel, 5000, 8);
-    ledcAttachPin(_pin, _pwmChannel);
-    reload();
+    ledcSetup(pwmChannel, 5000, 8);
+    ledcAttachPin(pin, pwmChannel);
+    Reload();
 }
 
-void LedHandler::update()
+void LedHandler::Update()
 {
-    if (_isBlinking)
+    if (isBlinking)
     {
         unsigned long currentMillis = millis();
-        if (currentMillis - _lastBlinkTime >= _blinkInterval)
+        if (currentMillis - lastBlinkTime >= blinkInterval)
         {
-            _lastBlinkTime = currentMillis;
-            reload();
+            lastBlinkTime = currentMillis;
+            Reload();
         }
     }
 }
 
-void LedHandler::reload()
+void LedHandler::Reload()
 {
-    ledcWrite(_pwmChannel, isLedEnabled() ? getLedBrightness() : 0);
+    ledcWrite(pwmChannel, isLedEnabled() ? getLedBrightness() : 0);
 }

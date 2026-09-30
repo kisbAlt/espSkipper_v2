@@ -11,9 +11,9 @@ class SettingsDisplay
 {
 public:
     SettingsDisplay(Settings& settings, DisplayHandler& displayHandler);
-    void drawSettingsUI(QueueHandle_t buttonEventQueue);
+    void DrawSettingsUI(QueueHandle_t buttonEventQueue);
 private:
-    bool processButtonEvent(ButtonEvent btnEvent, ButtonName btnName);
+    bool ProcessButtonEvent(ButtonEvent btnEvent, ButtonName btnName);
     SettingsDisplayStatus status;
     Settings& settings;
     DisplayHandler& displayHandler;
