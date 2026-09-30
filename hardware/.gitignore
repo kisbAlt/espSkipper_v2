@@ -1,0 +1,35 @@
+# KiCad autosaves and backups
+_autosave-*
+*.bak
+*-bak
+*.bck
+*-saved.kicad_pcb
+*-saved.kicad_sch
+
+# KiCad user settings and caches
+*.kicad_prl
+fp-info-cache
+
+# Lock files
+*.lck
+
+# Manufacturing outputs / generated files
+*.gbr
+*.drl
+*.gbrjob
+*.pos
+*.rpt
+*.net
+*.xml
+*.csv
+
+# Temporary files
+*.tmp
+
+# Optional: Ignore a common folder name for generated fabrication files
+fab/
+gerbers/
+outputs/
+
+espSkipper2/espSkipper2-backups/*.zip
+espSkipper2/production/backups/*.zip
