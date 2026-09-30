@@ -24,12 +24,12 @@ GpsHandler::GpsHandler(InstrumentDataModel& dataModel) : dataModel(dataModel)
 
 void GpsHandler::init()
 {
-    pinMode(FORCE_ON_PIN, OUTPUT);
-    digitalWrite(FORCE_ON_PIN, HIGH); 
+    pinMode(GPS_FORCE_ON_PIN, OUTPUT);
+    digitalWrite(GPS_FORCE_ON_PIN, HIGH); 
     delay(2000);
 
     // start serial with default baud rate
-    gpsSerial.begin(GPS_BAUD_SLOW, SERIAL_8N1, RX_PIN, TX_PIN);
+    gpsSerial.begin(GPS_BAUD_SLOW, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
     delay(2000);
 
     // command to increase baud to 115200
@@ -41,7 +41,7 @@ void GpsHandler::init()
     delay(500);
 
     gpsSerial.setRxBufferSize(GPS_BUFFER);
-    gpsSerial.begin(GPS_BAUD, SERIAL_8N1, RX_PIN, TX_PIN);
+    gpsSerial.begin(GPS_BAUD, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
 
     // enable all NMEA sentences and set update rate to 1hz
     gpsSerial.println("$PMTK225,0*2B");

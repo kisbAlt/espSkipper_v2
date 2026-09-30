@@ -60,9 +60,9 @@ void WindHandler::init()
     dataModel.addSensor(SensorId::WindDirectionAWA, int(0), SensorUnit(SensorUnitEnum::Degrees), TextKey::SensorWindDirectionAWA);
 
 
-    pinMode(RX_PIN, INPUT_PULLUP);
-    windSerial.begin(9600, SERIAL_8N1, RX_PIN, TX_PIN);
-    windSerial.setPins(RX_PIN, TX_PIN, -1, RTS_PIN); 
+    pinMode(WIND_RX_PIN, INPUT_PULLUP);
+    windSerial.begin(9600, SERIAL_8N1, WIND_RX_PIN, WIND_TX_PIN);
+    windSerial.setPins(WIND_RX_PIN, WIND_TX_PIN, -1, WIND_RTS_PIN); 
     windSerial.setMode(UART_MODE_RS485_HALF_DUPLEX);
 
     currentState = WIND_IDLE;

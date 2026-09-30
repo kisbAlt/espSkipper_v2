@@ -1,9 +1,6 @@
 #pragma once
 #include "instrumentDataModel.hpp"
-
-#define RX_PIN  16  // Connects to SP3485 RX-I
-#define TX_PIN  15  // Connects to SP3485 TX-O
-#define RTS_PIN 6   // Connects to SP3485 RTS (Transmit/Receive Control)
+#include "pinout.hpp"
 
 class WindHandler {
 private:
