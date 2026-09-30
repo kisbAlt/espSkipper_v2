@@ -4,8 +4,6 @@
 #include "instrumentDataModel.hpp"
 #include "instrumentDataModel.hpp"
 
-#define DISPLAY_WIDTH 300
-
 
 enum class UpdatePage {
     MAIN_SCREEN,

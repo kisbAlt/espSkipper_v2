@@ -111,7 +111,7 @@ void DisplayHandler::DrawLayout()
                                             const int top_margin = 10;
                                             const int side_margin = 10;
                                             DisplayUtils::DrawTextCentered(lcd, -10, valueStr, COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::SimplyMono_Bold50pt7b, 1);
-                                            DisplayUtils::DrawText(lcd, DISPLAY_WIDTH - (valueLen * 12 + side_margin), top_margin, unitText, COLOR_RED, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
+                                            DisplayUtils::DrawText(lcd, OSP_LCD_WIDTH - (valueLen * 12 + side_margin), top_margin, unitText, COLOR_RED, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
                                             DisplayUtils::DrawText(lcd, side_margin, top_margin, Translator::get(titleKey), COLOR_BLACK, COLOR_NEUTRAL, DisplayUtils::TextFont::David_Sans8pt7b, 1);
                                         }
                                         else
