@@ -8,7 +8,7 @@ class LedHandler {
 public:
     using IsLedEnabledCallback = std::function<bool()>;
     using GetLedBrightnessCallback = std::function<uint8_t()>;
-    // Constructor takes the GPIO pin number
+
     LedHandler(uint8_t pin, IsLedEnabledCallback isLedEnabled, GetLedBrightnessCallback getLedBrightness, uint8_t pwmChannel = 0);
 
     void begin();

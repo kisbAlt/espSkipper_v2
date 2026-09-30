@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <mutex>
 #include <variant>
 #include <vector>
 
@@ -27,7 +26,6 @@ private:
     };
 
     std::array<SensorRecord, static_cast<size_t>(SensorId::MAX_SENSORS)> m_data;
-    mutable std::mutex m_mutex;
     const Settings &m_settings;
     SensorUnitEnum getCurrentUnitForSensor(SensorId id) const;
 
@@ -69,7 +67,6 @@ public:
         {
             if (isSensorEnabledAndHaveData(static_cast<SensorId>(i)))
             {
-                std::lock_guard<std::mutex> lock(m_mutex);
                 std::visit([](const auto &arg) {}, m_data[i].value);
                 SensorUnitEnum settingsUnit = getCurrentUnitForSensor(m_data[i].id);
                 cb(displayIndex, m_data[i].titleKey, m_data[i].GetValueInUnit(settingsUnit), GetUnitString(settingsUnit), m_data[i].id);

@@ -25,13 +25,11 @@ InstrumentDataModel::InstrumentDataModel(const Settings &settings) : m_settings(
 
 void InstrumentDataModel::updateSensor(SensorId id, SensorValue val)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     m_data[static_cast<size_t>(id)].UpdateValue(val);
 }
 
 void InstrumentDataModel::updateSensorIfLarger(SensorId id, SensorValue val)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     std::visit([&val, this, id](auto &currentVal)
                {
         using T = std::decay_t<decltype(currentVal)>;
@@ -46,7 +44,6 @@ void InstrumentDataModel::updateSensorIfLarger(SensorId id, SensorValue val)
 
 void InstrumentDataModel::updateSensorIfSmaller(SensorId id, SensorValue val)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     std::visit([&val, this, id](auto &currentVal)
                {
         using T = std::decay_t<decltype(currentVal)>;
@@ -61,7 +58,6 @@ void InstrumentDataModel::updateSensorIfSmaller(SensorId id, SensorValue val)
 
 void InstrumentDataModel::addSensor(SensorId id, SensorValue val, SensorUnit unit, TextKey titleKey, bool isAverage)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     m_data[static_cast<size_t>(id)] = {id, val, titleKey, unit, isAverage};
     count++;
 }
@@ -73,25 +69,21 @@ bool InstrumentDataModel::isSensorEnabled(SensorId id) const
 
 bool InstrumentDataModel::sensorHaveData(SensorId id) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     return m_data[static_cast<size_t>(id)].hasData;
 }
 
 SensorValue InstrumentDataModel::getSensorValue(SensorId id) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     return m_data[static_cast<size_t>(id)].value;
 }
 
 SensorValue InstrumentDataModel::getSensorValueInUnit(SensorId id, SensorUnitEnum targetUnitEnum) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     return m_data[static_cast<size_t>(id)].GetValueInUnit(targetUnitEnum);
 }
 
 TextKey InstrumentDataModel::getSensorTitleKey(SensorId id) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     return m_data[static_cast<size_t>(id)].titleKey;
 }
 
@@ -102,7 +94,6 @@ bool InstrumentDataModel::isSensorEnabledAndHaveData(SensorId id) const
 
 std::vector<std::pair<SensorId, SensorValue>> InstrumentDataModel::getDisplaySnapshot() const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     std::vector<std::pair<SensorId, SensorValue>> snapshot;
 
     for (size_t i = 0; i < m_data.size(); ++i)
@@ -135,7 +126,6 @@ void InstrumentDataModel::reload()
 
 void InstrumentDataModel::writeCurrentUnitString(char *unitString, size_t bufferSize, SensorId id) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     SensorUnitEnum settingsUnit = getCurrentUnitForSensor(id);
     strncpy(unitString, GetUnitString(settingsUnit), bufferSize - 1);
     unitString[bufferSize - 1] = '\0';
@@ -143,7 +133,6 @@ void InstrumentDataModel::writeCurrentUnitString(char *unitString, size_t buffer
 
 SensorValue InstrumentDataModel::getSensorValueCurrentUnit(SensorId id) const
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     SensorUnitEnum settingsUnit = getCurrentUnitForSensor(id);
     return m_data[static_cast<size_t>(id)].GetValueInUnit(settingsUnit);
 }

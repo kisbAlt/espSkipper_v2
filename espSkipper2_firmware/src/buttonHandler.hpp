@@ -21,6 +21,12 @@ enum class ButtonName
     BUTTON3
 };
 
+struct ButtonMessage
+{
+    ButtonName name;
+    ButtonEvent event;
+};
+
 using ButtonCallback = std::function<void()>;
 
 class ButtonHandler {

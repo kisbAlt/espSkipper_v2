@@ -28,6 +28,16 @@ ButtonHandler btn0(8);
 ButtonHandler btn1(17);
 ButtonHandler btn2(14);
 ButtonHandler btn3(21);
+QueueHandle_t buttonEventQueue;
+
+void postButtonEvent(const ButtonName btnName, const ButtonEvent event)
+{
+    const ButtonMessage message{btnName, event};
+    xQueueSend(buttonEventQueue, &message, 0);
+}
+
+void handleButtonEvent(const ButtonName btnName, const ButtonEvent event);
+
 void globalButtonTask(void* arg) {
     while (true) {
         btn0.process();
@@ -64,9 +74,17 @@ void sensorDisplayTask(void *pvParameters)
     //displayHandler.ResetDisplay();
     for (;;)
     {
+        ButtonMessage buttonMessage;
+        while (xQueueReceive(buttonEventQueue, &buttonMessage, 0) == pdTRUE)
+        {
+            handleButtonEvent(buttonMessage.name, buttonMessage.event);
+            if (currentState == AppState::SETTINGS_SCREEN)
+                break;
+        }
+
         if (currentState == AppState::SETTINGS_SCREEN)
         {
-            settingsDisplay.drawSettingsUI();
+            settingsDisplay.drawSettingsUI(buttonEventQueue);
             reloadAll();
             currentState = AppState::MAIN_SCREEN;
         }
@@ -81,11 +99,6 @@ void sensorDisplayTask(void *pvParameters)
 
 void handleButtonEvent(const ButtonName btnName, const ButtonEvent event)
 {
-    if (event != ButtonEvent::NONE && currentState == AppState::SETTINGS_SCREEN)
-    {
-        settingsDisplay.handleButtonPress(event, btnName);
-        return;
-    }
     switch (event)
     {
     case ButtonEvent::SINGLE_CLICK:
@@ -146,32 +159,39 @@ void setup()
     // Initialize buttons
     btn0.begin();
     btn0.onDoubleClick([]()
-                       { handleButtonEvent(ButtonName::BUTTON0, ButtonEvent::DOUBLE_CLICK); });
+                                             { postButtonEvent(ButtonName::BUTTON0, ButtonEvent::DOUBLE_CLICK); });
     btn0.onLongPress([]()
-                     { handleButtonEvent(ButtonName::BUTTON0, ButtonEvent::LONG_PRESS); });
+                                         { postButtonEvent(ButtonName::BUTTON0, ButtonEvent::LONG_PRESS); });
     btn0.onSingleClick([]()
-                       { handleButtonEvent(ButtonName::BUTTON0, ButtonEvent::SINGLE_CLICK); });
+                                             { postButtonEvent(ButtonName::BUTTON0, ButtonEvent::SINGLE_CLICK); });
     btn1.begin();
     btn1.onDoubleClick([]()
-                       { handleButtonEvent(ButtonName::BUTTON1, ButtonEvent::DOUBLE_CLICK); });
+                                             { postButtonEvent(ButtonName::BUTTON1, ButtonEvent::DOUBLE_CLICK); });
     btn1.onLongPress([]()
-                     { handleButtonEvent(ButtonName::BUTTON1, ButtonEvent::LONG_PRESS); });
+                                         { postButtonEvent(ButtonName::BUTTON1, ButtonEvent::LONG_PRESS); });
     btn1.onSingleClick([]()
-                       { handleButtonEvent(ButtonName::BUTTON1, ButtonEvent::SINGLE_CLICK); });
+                                             { postButtonEvent(ButtonName::BUTTON1, ButtonEvent::SINGLE_CLICK); });
     btn2.begin();
     btn2.onDoubleClick([]()
-                       { handleButtonEvent(ButtonName::BUTTON2, ButtonEvent::DOUBLE_CLICK); });
+                                             { postButtonEvent(ButtonName::BUTTON2, ButtonEvent::DOUBLE_CLICK); });
     btn2.onLongPress([]()
-                     { handleButtonEvent(ButtonName::BUTTON2, ButtonEvent::LONG_PRESS); });
+                                         { postButtonEvent(ButtonName::BUTTON2, ButtonEvent::LONG_PRESS); });
     btn2.onSingleClick([]()
-                       { handleButtonEvent(ButtonName::BUTTON2, ButtonEvent::SINGLE_CLICK); });
+                                             { postButtonEvent(ButtonName::BUTTON2, ButtonEvent::SINGLE_CLICK); });
     btn3.begin();
     btn3.onDoubleClick([]()
-                       { handleButtonEvent(ButtonName::BUTTON3, ButtonEvent::DOUBLE_CLICK); });
+                                             { postButtonEvent(ButtonName::BUTTON3, ButtonEvent::DOUBLE_CLICK); });
     btn3.onLongPress([]()
-                     { handleButtonEvent(ButtonName::BUTTON3, ButtonEvent::LONG_PRESS); });
+                                         { postButtonEvent(ButtonName::BUTTON3, ButtonEvent::LONG_PRESS); });
     btn3.onSingleClick([]()
-                       { handleButtonEvent(ButtonName::BUTTON3, ButtonEvent::SINGLE_CLICK); });
+                                             { postButtonEvent(ButtonName::BUTTON3, ButtonEvent::SINGLE_CLICK); });
+
+        buttonEventQueue = xQueueCreate(16, sizeof(ButtonMessage));
+        if (buttonEventQueue == nullptr)
+        {
+                Serial.println("Failed to create button event queue");
+                return;
+        }
     
     xTaskCreatePinnedToCore(
         sensorDisplayTask,
